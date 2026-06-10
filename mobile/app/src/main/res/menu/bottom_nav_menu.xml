@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_dashboard_24"
+        android:title="Home" />
+    <item
+        android:id="@+id/navigation_courts"
+        android:icon="@drawable/ic_courts_24"
+        android:title="Courts" />
+    <item
+        android:id="@+id/navigation_bookings"
+        android:icon="@drawable/ic_calendar_24"
+        android:title="Bookings" />
+    <item
+        android:id="@+id/navigation_stats"
+        android:icon="@drawable/ic_analytics_24"
+        android:title="Stats" />
+</menu>

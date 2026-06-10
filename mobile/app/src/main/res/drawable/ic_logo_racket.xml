@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Racket Head -->
+  <path
+      android:strokeColor="#576500"
+      android:strokeWidth="3.5"
+      android:strokeLineCap="round"
+      android:pathData="M 28 20 C 35 13, 42 20, 35 27 C 28 34, 21 27, 28 20 Z" />
+  <!-- Grid lines inside head -->
+  <path
+      android:strokeColor="#576500"
+      android:strokeWidth="1"
+      android:pathData="M 28 17 L 33 22 M 30 15 L 35 20 M 34 24 L 29 19 M 32 26 L 27 21" />
+  <!-- Handle -->
+  <path
+      android:strokeColor="#576500"
+      android:strokeWidth="4"
+      android:strokeLineCap="round"
+      android:pathData="M 23 25 L 14 34" />
+  <!-- Grip handle wrapping -->
+  <path
+      android:strokeColor="#576500"
+      android:strokeWidth="6.5"
+      android:strokeLineCap="square"
+      android:pathData="M 15 33 L 11 37" />
+  <!-- Pickleball Ball -->
+  <path
+      android:fillColor="#576500"
+      android:pathData="M 20 29 A 3 3 0 1 1 20 28.99 Z" />
+</vector>
