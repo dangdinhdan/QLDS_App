@@ -21,7 +21,8 @@ CREATE TABLE tbl_san (
     trangthai VARCHAR(50) DEFAULT 'Trong',
     url VARCHAR(255),
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    delete_at DATETIME
+    delete_at DATETIME,
+    isdelete TINYINT(1) DEFAULT 0
 ) ENGINE=InnoDB;
 
 -- Table tbl_taikhoan
@@ -41,7 +42,8 @@ CREATE TABLE tbl_banggia (
     dongia DECIMAL(10, 2) NOT NULL,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
-    delete_at DATETIME
+    delete_at DATETIME,
+    isdelete TINYINT(1) DEFAULT 0
 ) ENGINE=InnoDB;
 
 -- Table tbl_banggia_san

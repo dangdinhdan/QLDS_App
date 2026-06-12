@@ -37,4 +37,8 @@ public class San {
 
     @Column(name = "delete_at")
     private LocalDateTime deleteAt;
+
+    @Column(name = "isdelete")
+    @Builder.Default
+    private Boolean isdelete = false;
 }
