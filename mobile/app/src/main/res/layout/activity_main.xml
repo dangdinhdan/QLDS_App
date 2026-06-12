@@ -338,16 +338,46 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <TextView
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Quản lý sân Pickleball"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/on_background"
                 android:paddingHorizontal="16dp"
                 android:paddingTop="16dp"
-                android:paddingBottom="4dp" />
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="Quản lý sân Pickleball"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/on_background" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add_court"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Thêm sân"
+                    android:textSize="12sp"
+                    android:textColor="#191E00"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary_container"
+                    app:icon="@drawable/ic_add_24"
+                    app:iconTint="#191E00"
+                    app:iconSize="16dp"
+                    app:cornerRadius="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:minHeight="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
+
+            </RelativeLayout>
+
 
             <TextView
                 android:layout_width="match_parent"
@@ -1093,19 +1123,7 @@
 
     </FrameLayout>
 
-    <!-- FAB for Quick Add Booking -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_booking"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:contentDescription="Quick Book"
-        android:src="@drawable/ic_add_24"
-        app:tint="@color/secondary"
-        app:backgroundTint="@color/primary_container"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintEnd_toEndOf="parent" />
+
 
     <!-- Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

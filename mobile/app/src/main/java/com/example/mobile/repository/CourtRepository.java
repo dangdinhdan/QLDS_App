@@ -1,23 +1,35 @@
 package com.example.mobile.repository;
 
+import android.util.Log;
 import com.example.mobile.model.Booking;
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
+import org.json.JSONObject;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CourtRepository {
     private static CourtRepository instance;
+    private static final String API_URL = "http://10.0.2.2:8080/api/san";
+    private final ExecutorService executorService;
     private final List<Court> courts;
     private final List<Booking> bookings;
     private int nextBookingId = 5;
 
     private CourtRepository() {
+        executorService = Executors.newSingleThreadExecutor();
         courts = new ArrayList<>();
         bookings = new ArrayList<>();
         initMockData();
     }
+
 
     public static synchronized CourtRepository getInstance() {
         if (instance == null) {
@@ -43,6 +55,16 @@ public class CourtRepository {
 
     public List<Court> getAllCourts() {
         return new ArrayList<>(courts);
+    }
+
+    public boolean isCourtCodeExists(String code) {
+        if (code == null) return false;
+        for (Court c : courts) {
+            if (c.getCourtCode() != null && c.getCourtCode().equalsIgnoreCase(code.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Court getCourtById(int courtId) {
@@ -115,6 +137,10 @@ public class CourtRepository {
     }
 
     public void addCourt(Court court) {
+        addCourt(court, null);
+    }
+
+    public void addCourt(Court court, Runnable onComplete) {
         int nextId = 1;
         for (Court c : courts) {
             if (c.getId() >= nextId) {
@@ -132,7 +158,72 @@ public class CourtRepository {
                 court.getEstimatedCompletionDate()
         );
         courts.add(newCourt);
+
+        // Call backend API in background thread
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(API_URL);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("maSan", newCourt.getCourtCode());
+                jsonRequest.put("ten", newCourt.getName());
+                jsonRequest.put("loaimatsan", newCourt.getSurfaceType());
+
+                String statusStr = "Trong";
+                if (newCourt.getStatus() == CourtStatus.MAINTENANCE) {
+                    statusStr = "Bảo trì";
+                } else if (newCourt.getStatus() == CourtStatus.IN_USE) {
+                    statusStr = "Đang sử dụng";
+                } else if (newCourt.getStatus() == CourtStatus.BOOKED) {
+                    statusStr = "Đã đặt";
+                }
+                jsonRequest.put("trangthai", statusStr);
+                jsonRequest.put("url", newCourt.getImageUrl());
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Thêm sân lên backend thành công");
+                } else {
+                    java.io.InputStream errorStream = conn.getErrorStream();
+                    if (errorStream != null) {
+                        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(errorStream, java.nio.charset.StandardCharsets.UTF_8))) {
+                            StringBuilder response = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                response.append(line.trim());
+                            }
+                            Log.e("CourtRepository", "Lỗi backend: " + response.toString());
+                        }
+                    } else {
+                        Log.e("CourtRepository", "Lỗi thêm sân lên backend. Response code: " + responseCode);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi thêm sân lên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
     }
+
 
     public void updateCourt(int courtId, String name, String surfaceType, CourtStatus status) {
         Court court = getCourtById(courtId);
@@ -171,6 +262,77 @@ public class CourtRepository {
             return true;
         }
         return false;
+    }
+
+    public void refreshCourtsFromBackend(Runnable onComplete) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(API_URL);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    java.io.InputStream inputStream = conn.getInputStream();
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            response.append(line.trim());
+                        }
+
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        if (jsonResponse.optBoolean("success", false)) {
+                            org.json.JSONArray data = jsonResponse.optJSONArray("data");
+                            if (data != null) {
+                                List<Court> newCourts = new ArrayList<>();
+                                for (int i = 0; i < data.length(); i++) {
+                                    JSONObject obj = data.getJSONObject(i);
+                                    int id = obj.optInt("id", 0);
+                                    String maSan = obj.optString("maSan", "");
+                                    String ten = obj.optString("ten", "");
+                                    String loaimatsan = obj.optString("loaimatsan", "Trong nhà");
+                                    String trangthai = obj.optString("trangthai", "Trong");
+                                    String urlStr = obj.optString("url", "");
+
+                                    CourtStatus status = CourtStatus.EMPTY;
+                                    if (trangthai.equalsIgnoreCase("Trong") || trangthai.equalsIgnoreCase("EMPTY")) {
+                                        status = CourtStatus.EMPTY;
+                                    } else if (trangthai.equalsIgnoreCase("Bảo trì") || trangthai.equalsIgnoreCase("MAINTENANCE")) {
+                                        status = CourtStatus.MAINTENANCE;
+                                    } else if (trangthai.equalsIgnoreCase("Đang sử dụng") || trangthai.equalsIgnoreCase("IN_USE")) {
+                                        status = CourtStatus.IN_USE;
+                                    } else if (trangthai.equalsIgnoreCase("Đã đặt") || trangthai.equalsIgnoreCase("BOOKED")) {
+                                        status = CourtStatus.BOOKED;
+                                    }
+
+                                    newCourts.add(new Court(id, maSan, ten, status, 15.0, loaimatsan, urlStr, null));
+                                }
+                                synchronized (courts) {
+                                    courts.clear();
+                                    courts.addAll(newCourts);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Log.e("CourtRepository", "Lỗi tải sân từ backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi tải danh sách sân từ backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
     }
 
     // Analytics / Calculation helper methods

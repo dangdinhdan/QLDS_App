@@ -32,4 +32,37 @@ public class SanController {
                     .build());
         }
     }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<San>> createSan(@RequestBody San san) {
+        try {
+            if (san.getMaSan() == null || san.getMaSan().trim().isEmpty() ||
+                san.getTen() == null || san.getTen().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(ApiResponse.<San>builder()
+                        .success(false)
+                        .message("Mã sân và tên sân không được để trống!")
+                        .build());
+            }
+
+            if (sanRepository.findByMaSan(san.getMaSan()).isPresent()) {
+                return ResponseEntity.badRequest().body(ApiResponse.<San>builder()
+                        .success(false)
+                        .message("Mã sân đã tồn tại!")
+                        .build());
+            }
+
+            San savedSan = sanRepository.save(san);
+            return ResponseEntity.ok(ApiResponse.<San>builder()
+                    .success(true)
+                    .message("Thêm sân mới thành công!")
+                    .data(savedSan)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.<San>builder()
+                    .success(false)
+                    .message("Lỗi khi thêm sân mới: " + e.getMessage())
+                    .build());
+        }
+    }
 }
+

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -168,25 +170,6 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         scrollStatsTab.setVisibility(View.GONE);
 
         activeTab.setVisibility(View.VISIBLE);
-
-        FloatingActionButton fab = findViewById(R.id.fab_add_booking);
-        if (fab != null) {
-            if (activeTab == layoutCourtsTab) {
-                fab.setVisibility(View.VISIBLE);
-                fab.setOnClickListener(v -> {
-                    Intent intent = new Intent(MainActivity.this, AddCourtActivity.class);
-                    startActivity(intent);
-                });
-            } else if (activeTab == layoutBookingsTab) {
-                fab.setVisibility(View.VISIBLE);
-                fab.setOnClickListener(v -> showAddBookingDialog(null));
-            } else if (activeTab == scrollHome) {
-                fab.setVisibility(View.VISIBLE);
-                fab.setOnClickListener(v -> showAddBookingDialog(null));
-            } else {
-                fab.setVisibility(View.GONE);
-            }
-        }
     }
 
     private void setupRecyclerViews() {
@@ -202,15 +185,52 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     }
 
     private void setupActions() {
+        // Profile picture action (Logout Popup Menu)
+        ImageView imageProfile = findViewById(R.id.image_profile);
+        if (imageProfile != null) {
+            imageProfile.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(MainActivity.this, imageProfile);
+                popup.getMenu().add("Thông tin tài khoản");
+                popup.getMenu().add("Đăng xuất");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getTitle().equals("Thông tin tài khoản")) {
+                        Toast.makeText(MainActivity.this, "Tài khoản: admin (Quản trị viên)", Toast.LENGTH_SHORT).show();
+                        return true;
+                    } else if (item.getTitle().equals("Đăng xuất")) {
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Đăng xuất")
+                                .setMessage("Bạn có chắc chắn muốn đăng xuất tài khoản?")
+                                .setPositiveButton("Đăng xuất", (dialog, which) -> {
+                                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                    finish();
+                                    Toast.makeText(MainActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+                                })
+                                .setNegativeButton("Hủy", null)
+                                .show();
+                        return true;
+                    }
+                    return false;
+                });
+                popup.show();
+            });
+        }
+
         // Notifications placeholder
         ImageButton buttonNotifications = findViewById(R.id.button_notifications);
         buttonNotifications.setOnClickListener(v -> 
             Toast.makeText(MainActivity.this, "Không có thông báo mới", Toast.LENGTH_SHORT).show()
         );
 
-        // Add booking FAB action
-        FloatingActionButton fabAddBooking = findViewById(R.id.fab_add_booking);
-        fabAddBooking.setOnClickListener(v -> showAddBookingDialog(null));
+        // Add court button action
+        View buttonAddCourt = findViewById(R.id.button_add_court);
+        if (buttonAddCourt != null) {
+            buttonAddCourt.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, AddCourtActivity.class);
+                startActivity(intent);
+            });
+        }
 
         // Setup new layout bookings tab actions
         View addBookingTop = findViewById(R.id.button_add_booking_top);

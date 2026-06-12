@@ -46,17 +46,47 @@ public class AddCourtActivity extends AppCompatActivity {
     private boolean isEditMode = false;
     private Court editingCourt;
 
+    private String saveImageLocally(Uri uri) {
+        try {
+            String fileName = "court_" + System.currentTimeMillis() + ".jpg";
+            java.io.File storageDir = new java.io.File(getFilesDir(), "courts");
+            if (!storageDir.exists()) {
+                storageDir.mkdirs();
+            }
+            java.io.File destFile = new java.io.File(storageDir, fileName);
+            try (java.io.InputStream inputStream = getContentResolver().openInputStream(uri);
+                 java.io.OutputStream outputStream = new java.io.FileOutputStream(destFile)) {
+                if (inputStream == null) return null;
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+            return Uri.fromFile(destFile).toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
-                    selectedImageUrl = uri.toString();
-                    imagePreview.setVisibility(View.VISIBLE);
-                    layoutUploadHelper.setVisibility(View.GONE);
-                    imagePreview.setImageURI(uri);
+                    String localPath = saveImageLocally(uri);
+                    if (localPath != null) {
+                        selectedImageUrl = localPath;
+                        imagePreview.setVisibility(View.VISIBLE);
+                        layoutUploadHelper.setVisibility(View.GONE);
+                        imagePreview.setImageURI(Uri.parse(localPath));
+                    } else {
+                        Toast.makeText(this, "Không thể lưu ảnh cục bộ!", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
     );
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +183,12 @@ public class AddCourtActivity extends AppCompatActivity {
                 imagePreview.setVisibility(View.VISIBLE);
                 layoutUploadHelper.setVisibility(View.GONE);
                 if (selectedImageUrl.startsWith("content://") || selectedImageUrl.startsWith("file://")) {
-                    imagePreview.setImageURI(Uri.parse(selectedImageUrl));
+                    try {
+                        imagePreview.setImageURI(Uri.parse(selectedImageUrl));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        imagePreview.setImageResource(R.drawable.ic_courts_24);
+                    }
                 } else {
                     ImageLoader.getInstance().loadImage(selectedImageUrl, imagePreview, R.drawable.ic_courts_24);
                 }
@@ -182,6 +217,20 @@ public class AddCourtActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(name)) {
             editCourtName.setError("Vui lòng nhập tên sân");
             return;
+        }
+
+        // Validate uniqueness of court code
+        if (isEditMode) {
+            if (editingCourt != null && !editingCourt.getCourtCode().equalsIgnoreCase(code) && 
+                CourtRepository.getInstance().isCourtCodeExists(code)) {
+                editCourtCode.setError("Mã sân đã tồn tại!");
+                return;
+            }
+        } else {
+            if (CourtRepository.getInstance().isCourtCodeExists(code)) {
+                editCourtCode.setError("Mã sân đã tồn tại!");
+                return;
+            }
         }
 
         // Determine status

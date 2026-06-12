@@ -50,42 +50,47 @@ public class MainViewModel extends ViewModel {
         return popularCourtLiveData;
     }
 
+    public void refreshDataLocalOnly() {
+        courtsLiveData.postValue(repository.getAllCourts());
+        bookingsLiveData.postValue(repository.getBookings());
+        occupancyRateLiveData.postValue(repository.getOccupancyRate());
+        totalRevenueLiveData.postValue(repository.getTotalRevenue());
+        activeCourtsLiveData.postValue(repository.getActiveCourtsCount());
+        popularCourtLiveData.postValue(repository.getMostPopularCourtName());
+    }
+
     public void refreshData() {
-        courtsLiveData.setValue(repository.getAllCourts());
-        bookingsLiveData.setValue(repository.getBookings());
-        occupancyRateLiveData.setValue(repository.getOccupancyRate());
-        totalRevenueLiveData.setValue(repository.getTotalRevenue());
-        activeCourtsLiveData.setValue(repository.getActiveCourtsCount());
-        popularCourtLiveData.setValue(repository.getMostPopularCourtName());
+        refreshDataLocalOnly();
+        repository.refreshCourtsFromBackend(this::refreshDataLocalOnly);
     }
 
     public void addBooking(Booking booking) {
         repository.addBooking(booking);
-        refreshData();
+        refreshDataLocalOnly();
     }
 
     public void deleteBooking(int bookingId) {
         repository.deleteBooking(bookingId);
-        refreshData();
+        refreshDataLocalOnly();
     }
 
     public void updateCourtStatus(int courtId, CourtStatus status) {
         repository.updateCourtStatus(courtId, status);
-        refreshData();
+        refreshDataLocalOnly();
     }
 
     public void updateCourt(int courtId, String name, String surfaceType, CourtStatus status) {
         repository.updateCourt(courtId, name, surfaceType, status);
-        refreshData();
+        refreshDataLocalOnly();
     }
 
     public void deleteCourt(int courtId) {
         repository.deleteCourt(courtId);
-        refreshData();
+        refreshDataLocalOnly();
     }
 
     public void addCourt(Court court) {
-        repository.addCourt(court);
-        refreshData();
+        repository.addCourt(court, this::refreshData);
+        refreshDataLocalOnly();
     }
 }
