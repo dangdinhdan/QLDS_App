@@ -26,6 +26,9 @@
         <activity 
             android:name=".MainActivity"
             android:windowSoftInputMode="adjustPan" />
+        <activity 
+            android:name=".AddCourtActivity"
+            android:windowSoftInputMode="adjustPan" />
     </application>
 
 </manifest>

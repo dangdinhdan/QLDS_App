@@ -8,6 +8,7 @@ public class Booking {
     private final String startTime;
     private final String endTime;
     private double fee;
+    private String status; // "Đang sử dụng", "Đã đặt", "Hoàn thành", "Đã hủy"
 
     public Booking(int id, int courtId, String playerName, String date, String startTime, String endTime, double fee) {
         this.id = id;
@@ -17,6 +18,18 @@ public class Booking {
         this.startTime = startTime;
         this.endTime = endTime;
         this.fee = fee;
+        this.status = "Đã đặt"; // Default status
+    }
+
+    public Booking(int id, int courtId, String playerName, String date, String startTime, String endTime, double fee, String status) {
+        this.id = id;
+        this.courtId = courtId;
+        this.playerName = playerName;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.fee = fee;
+        this.status = status;
     }
 
     public int getId() {
@@ -49,6 +62,14 @@ public class Booking {
 
     public void setFee(double fee) {
         this.fee = fee;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public double calculateDurationHours() {

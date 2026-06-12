@@ -35,9 +35,10 @@ public class CourtRepository {
         courts.add(new Court(5, "Sân B2", CourtStatus.EMPTY, 15.0, "Thảm", "https://lh3.googleusercontent.com/aida-public/AB6AXuDIiHgvnl3jhQzzGSgh61_S1VOTMOTTSV2Hab3IjOF4Di9XpgutWEacyMT3nx8pp8dOVsnSPI2uyNwB8m-lNgo71XTXkQk5PIiFxWMLnqdR816CjqPxgdCkr1jFvSXzeyEjyTPNr-he0856Dl8L3SykteUz3j7y6D4NcB2XImuTMm9MtheCXjmkoPgUJPIGu-UBvb8Zv2FlV6iJgYA5sUhU-Drxc8UdFKTnTBH__y4E2BbDtxRu6fVn6XqTHQwBQ3tjU0lwUr4gareh", null));
 
         // Pre-populate bookings matching the visual context
-        bookings.add(new Booking(1, 2, "Trần Thị B", "2026-06-11", "08:00", "10:00", 40.0));
-        bookings.add(new Booking(2, 2, "Emma Watson", "2026-06-11", "10:00", "12:00", 40.0));
-        bookings.add(new Booking(3, 3, "Nguyễn Văn A", "2026-06-11", "18:00", "20:00", 36.0));
+        bookings.add(new Booking(1, 1, "Nguyễn Văn An", "2026-06-11", "17:00", "19:00", 30.0, "Đang sử dụng"));
+        bookings.add(new Booking(2, 3, "Trần Thị Bích", "2026-06-11", "18:30", "20:00", 27.0, "Đã đặt"));
+        bookings.add(new Booking(3, 2, "Lê Hoàng Nam", "2026-06-11", "15:00", "17:00", 40.0, "Hoàn thành"));
+        bookings.add(new Booking(4, 4, "Phạm Minh Đức", "2026-06-11", "19:00", "21:00", 30.0, "Đã hủy"));
     }
 
     public List<Court> getAllCourts() {
@@ -65,7 +66,8 @@ public class CourtRepository {
                 booking.getDate(),
                 booking.getStartTime(),
                 booking.getEndTime(),
-                booking.getFee()
+                booking.getFee(),
+                booking.getStatus()
         );
         bookings.add(newBooking);
         
@@ -110,6 +112,65 @@ public class CourtRepository {
         if (court != null) {
             court.setStatus(status);
         }
+    }
+
+    public void addCourt(Court court) {
+        int nextId = 1;
+        for (Court c : courts) {
+            if (c.getId() >= nextId) {
+                nextId = c.getId() + 1;
+            }
+        }
+        Court newCourt = new Court(
+                nextId,
+                court.getCourtCode() != null ? court.getCourtCode() : "PB-" + String.format("%02d", nextId),
+                court.getName(),
+                court.getStatus(),
+                court.getHourlyRate() > 0 ? court.getHourlyRate() : 15.0,
+                court.getSurfaceType(),
+                court.getImageUrl() != null ? court.getImageUrl() : "",
+                court.getEstimatedCompletionDate()
+        );
+        courts.add(newCourt);
+    }
+
+    public void updateCourt(int courtId, String name, String surfaceType, CourtStatus status) {
+        Court court = getCourtById(courtId);
+        if (court != null) {
+            court.setName(name);
+            court.setSurfaceType(surfaceType);
+            court.setStatus(status);
+        }
+    }
+
+    public void updateCourt(int courtId, String courtCode, String name, String surfaceType, CourtStatus status, String imageUrl) {
+        Court court = getCourtById(courtId);
+        if (court != null) {
+            court.setCourtCode(courtCode);
+            court.setName(name);
+            court.setSurfaceType(surfaceType);
+            court.setStatus(status);
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                court.setImageUrl(imageUrl);
+            }
+        }
+    }
+
+    public boolean deleteCourt(int courtId) {
+        Court court = getCourtById(courtId);
+        if (court != null) {
+            courts.remove(court);
+            // Delete bookings related to this court
+            List<Booking> toRemove = new ArrayList<>();
+            for (Booking b : bookings) {
+                if (b.getCourtId() == courtId) {
+                    toRemove.add(b);
+                }
+            }
+            bookings.removeAll(toRemove);
+            return true;
+        }
+        return false;
     }
 
     // Analytics / Calculation helper methods

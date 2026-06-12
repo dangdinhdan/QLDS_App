@@ -1,5 +1,6 @@
 package com.example.mobile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import com.example.mobile.view.CourtAdapter;
 import com.example.mobile.viewmodel.MainViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +89,17 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         setupRecyclerViews();
         observeViewModel();
         setupActions();
+
+        // Initialize active tab state and FAB action
+        showTab(scrollHome);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.refreshData();
+        }
     }
 
     private void initViews() {
@@ -155,6 +168,25 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         scrollStatsTab.setVisibility(View.GONE);
 
         activeTab.setVisibility(View.VISIBLE);
+
+        FloatingActionButton fab = findViewById(R.id.fab_add_booking);
+        if (fab != null) {
+            if (activeTab == layoutCourtsTab) {
+                fab.setVisibility(View.VISIBLE);
+                fab.setOnClickListener(v -> {
+                    Intent intent = new Intent(MainActivity.this, AddCourtActivity.class);
+                    startActivity(intent);
+                });
+            } else if (activeTab == layoutBookingsTab) {
+                fab.setVisibility(View.VISIBLE);
+                fab.setOnClickListener(v -> showAddBookingDialog(null));
+            } else if (activeTab == scrollHome) {
+                fab.setVisibility(View.VISIBLE);
+                fab.setOnClickListener(v -> showAddBookingDialog(null));
+            } else {
+                fab.setVisibility(View.GONE);
+            }
+        }
     }
 
     private void setupRecyclerViews() {
@@ -180,6 +212,28 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         FloatingActionButton fabAddBooking = findViewById(R.id.fab_add_booking);
         fabAddBooking.setOnClickListener(v -> showAddBookingDialog(null));
 
+        // Setup new layout bookings tab actions
+        View addBookingTop = findViewById(R.id.button_add_booking_top);
+        if (addBookingTop != null) {
+            addBookingTop.setOnClickListener(v -> showAddBookingDialog(null));
+        }
+
+        View btnRequests = findViewById(R.id.button_view_requests);
+        if (btnRequests != null) {
+            btnRequests.setOnClickListener(v -> 
+                Toast.makeText(MainActivity.this, "Đang mở danh sách yêu cầu chờ duyệt...", Toast.LENGTH_SHORT).show()
+            );
+        }
+
+        View btnReports = findViewById(R.id.button_view_reports);
+        if (btnReports != null) {
+            btnReports.setOnClickListener(v -> 
+                Toast.makeText(MainActivity.this, "Đang xuất báo cáo thống kê đặt sân...", Toast.LENGTH_SHORT).show()
+            );
+        }
+
+        setupCalendarStrip();
+
         // Search listener
         editSearchCourts.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -201,6 +255,51 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         chipFilterInUse.setOnClickListener(v -> selectFilterChip("Đang dùng"));
         chipFilterBooked.setOnClickListener(v -> selectFilterChip("Đã đặt"));
         chipFilterMaintenance.setOnClickListener(v -> selectFilterChip("Bảo trì"));
+    }
+
+    private void setupCalendarStrip() {
+        com.google.android.material.card.MaterialCardView day23 = findViewById(R.id.calendar_day_23);
+        com.google.android.material.card.MaterialCardView day24 = findViewById(R.id.calendar_day_24);
+        com.google.android.material.card.MaterialCardView day25 = findViewById(R.id.calendar_day_25);
+        com.google.android.material.card.MaterialCardView day26 = findViewById(R.id.calendar_day_26);
+        com.google.android.material.card.MaterialCardView day27 = findViewById(R.id.calendar_day_27);
+
+        com.google.android.material.card.MaterialCardView[] days = {day23, day24, day25, day26, day27};
+        int[] dayNums = {23, 24, 25, 26, 27};
+        
+        for (int i = 0; i < days.length; i++) {
+            final int index = i;
+            if (days[i] != null) {
+                days[i].setOnClickListener(v -> {
+                    // Update visual selection
+                    for (int j = 0; j < days.length; j++) {
+                        if (days[j] != null) {
+                            if (j == index) {
+                                days[j].setCardBackgroundColor(getResources().getColor(R.color.primary_container));
+                                days[j].setStrokeWidth((int) (1.5 * getResources().getDisplayMetrics().density));
+                                days[j].setStrokeColor(getResources().getColor(R.color.primary));
+                            } else {
+                                days[j].setCardBackgroundColor(getResources().getColor(R.color.white));
+                                days[j].setStrokeWidth((int) (1 * getResources().getDisplayMetrics().density));
+                                days[j].setStrokeColor(getResources().getColor(R.color.border_gray));
+                            }
+                        }
+                    }
+                    
+                    // Filter bookings or show Toast
+                    if (dayNums[index] == 24) {
+                        bookingAdapter.setData(cachedBookings, cachedCourts);
+                        TextView badge = findViewById(R.id.badge_booking_count);
+                        if (badge != null) badge.setText(cachedBookings.size() + " lượt đặt");
+                    } else {
+                        bookingAdapter.setData(new ArrayList<>(), cachedCourts);
+                        TextView badge = findViewById(R.id.badge_booking_count);
+                        if (badge != null) badge.setText("0 lượt đặt");
+                    }
+                    Toast.makeText(MainActivity.this, "Đang xem lịch ngày " + dayNums[index] + "/05", Toast.LENGTH_SHORT).show();
+                });
+            }
+        }
     }
 
     private void observeViewModel() {
@@ -303,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             }
 
             // Quick interaction: click chip to set status directly
-            chipView.setOnClickListener(v -> onChangeStatus(court));
+            chipView.setOnClickListener(v -> showChangeStatusDialog(court));
 
             layoutQuickCourtsContainer.addView(chipView);
         }
@@ -315,6 +414,12 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
         // Update dashboard metrics count
         textBookingsCount.setText(String.valueOf(bookings.size()));
+
+        // Update badge booking count on bookings tab
+        TextView badgeBookingCount = findViewById(R.id.badge_booking_count);
+        if (badgeBookingCount != null) {
+            badgeBookingCount.setText(bookings.size() + " lượt đặt");
+        }
 
         // Update Recent Activities list on home tab (limit to latest 5 bookings)
         layoutRecentActivities.removeAllViews();
@@ -355,26 +460,112 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     // ================= Adapters Action Callbacks =================
 
     @Override
-    public void onBookCourt(Court court) {
-        showAddBookingDialog(court);
+    public void onEditCourt(Court court) {
+        Intent intent = new Intent(MainActivity.this, AddCourtActivity.class);
+        intent.putExtra("court_id", court.getId());
+        startActivity(intent);
     }
 
     @Override
-    public void onChangeStatus(Court court) {
-        showChangeStatusDialog(court);
+    public void onDeleteCourt(Court court) {
+        showDeleteCourtDialog(court);
+    }
+
+    private void showEditCourtDialog(Court court) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_edit_court, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        EditText editCourtName = dialogView.findViewById(R.id.edit_court_name);
+        Spinner spinnerSurface = dialogView.findViewById(R.id.spinner_court_surface);
+        Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_court_status);
+
+        editCourtName.setText(court.getName());
+
+        // Surface spinner
+        String[] surfaces = {"Cứng", "Thảm"};
+        ArrayAdapter<String> surfaceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, surfaces);
+        surfaceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSurface.setAdapter(surfaceAdapter);
+        if (court.getSurfaceType() != null && court.getSurfaceType().equalsIgnoreCase("Thảm")) {
+            spinnerSurface.setSelection(1);
+        } else {
+            spinnerSurface.setSelection(0);
+        }
+
+        // Status spinner
+        String[] statuses = {"Trống", "Đang sử dụng", "Đã đặt", "Bảo trì"};
+        CourtStatus[] statusValues = {CourtStatus.EMPTY, CourtStatus.IN_USE, CourtStatus.BOOKED, CourtStatus.MAINTENANCE};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerStatus.setAdapter(statusAdapter);
+
+        int selectedStatusIndex = 0;
+        for (int i = 0; i < statusValues.length; i++) {
+            if (court.getStatus() == statusValues[i]) {
+                selectedStatusIndex = i;
+                break;
+            }
+        }
+        spinnerStatus.setSelection(selectedStatusIndex);
+
+        // Cancel button
+        dialogView.findViewById(R.id.button_dialog_cancel).setOnClickListener(v -> dialog.dismiss());
+
+        // Confirm button
+        dialogView.findViewById(R.id.button_dialog_confirm).setOnClickListener(v -> {
+            String name = editCourtName.getText().toString().trim();
+            if (TextUtils.isEmpty(name)) {
+                editCourtName.setError("Vui lòng nhập tên sân");
+                return;
+            }
+
+            String surface = surfaces[spinnerSurface.getSelectedItemPosition()];
+            CourtStatus status = statusValues[spinnerStatus.getSelectedItemPosition()];
+
+            viewModel.updateCourt(court.getId(), name, surface, status);
+            Toast.makeText(MainActivity.this, "Cập nhật thông tin sân thành công!", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void showDeleteCourtDialog(Court court) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa sân")
+                .setMessage("Bạn có chắc chắn muốn xóa " + court.getName() + "? Tất cả lịch đặt liên quan đến sân này cũng sẽ bị xóa.")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    viewModel.deleteCourt(court.getId());
+                    if (courtAdapter != null) {
+                        courtAdapter.setSelectedCourtId(-1); // Clear selection
+                    }
+                    Toast.makeText(MainActivity.this, "Đã xóa sân thành công!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 
     @Override
     public void onCancelBooking(Booking booking) {
         new AlertDialog.Builder(this)
-                .setTitle("Hủy đặt sân")
-                .setMessage("Bạn có chắc chắn muốn hủy đặt sân cho " + booking.getPlayerName() + "?")
-                .setPositiveButton("Hủy đặt", (dialog, which) -> {
+                .setTitle("Xóa lịch đặt sân")
+                .setMessage("Bạn có chắc chắn muốn xóa lịch đặt sân của " + booking.getPlayerName() + "?")
+                .setPositiveButton("Xóa", (dialog, which) -> {
                     viewModel.deleteBooking(booking.getId());
-                    Toast.makeText(MainActivity.this, "Đã hủy đặt sân thành công!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Đã xóa lịch đặt sân thành công!", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Quay lại", null)
                 .show();
+    }
+
+    @Override
+    public void onStatusChanged(Booking booking) {
+        viewModel.refreshData();
+        Toast.makeText(this, "Đã cập nhật trạng thái đặt sân!", Toast.LENGTH_SHORT).show();
     }
 
     // ================= Business Dialogs Managers =================
@@ -515,6 +706,72 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         } catch (Exception e) {
             return 0.0;
         }
+    }
+
+    private void showAddCourtDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_edit_court, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+
+        TextView textTitle = dialogView.findViewById(R.id.text_dialog_title);
+        EditText editCourtName = dialogView.findViewById(R.id.edit_court_name);
+        Spinner spinnerSurface = dialogView.findViewById(R.id.spinner_court_surface);
+        Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_court_status);
+
+        if (textTitle != null) {
+            textTitle.setText("Thêm sân mới");
+        }
+
+        // Surface spinner
+        String[] surfaces = {"Cứng", "Thảm"};
+        ArrayAdapter<String> surfaceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, surfaces);
+        surfaceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSurface.setAdapter(surfaceAdapter);
+        spinnerSurface.setSelection(0); // Default to Cứng
+
+        // Status spinner
+        String[] statuses = {"Trống", "Đang sử dụng", "Đã đặt", "Bảo trì"};
+        CourtStatus[] statusValues = {CourtStatus.EMPTY, CourtStatus.IN_USE, CourtStatus.BOOKED, CourtStatus.MAINTENANCE};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerStatus.setAdapter(statusAdapter);
+        spinnerStatus.setSelection(0); // Default to EMPTY (Trống)
+
+        // Cancel button
+        dialogView.findViewById(R.id.button_dialog_cancel).setOnClickListener(v -> dialog.dismiss());
+
+        // Confirm button
+        MaterialButton buttonConfirm = dialogView.findViewById(R.id.button_dialog_confirm);
+        if (buttonConfirm != null) {
+            buttonConfirm.setText("Thêm sân");
+        }
+        dialogView.findViewById(R.id.button_dialog_confirm).setOnClickListener(v -> {
+            String name = editCourtName.getText().toString().trim();
+            if (TextUtils.isEmpty(name)) {
+                editCourtName.setError("Vui lòng nhập tên sân");
+                return;
+            }
+
+            String surface = surfaces[spinnerSurface.getSelectedItemPosition()];
+            CourtStatus status = statusValues[spinnerStatus.getSelectedItemPosition()];
+
+            // Use default images
+            String defaultImage = "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500";
+            if (surface.equalsIgnoreCase("Thảm")) {
+                defaultImage = "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500";
+            }
+
+            Court newCourt = new Court(0, name, status, 15.0, surface, defaultImage, null);
+            viewModel.addCourt(newCourt);
+
+            Toast.makeText(MainActivity.this, "Thêm sân mới thành công!", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void selectFilterChip(String filter) {

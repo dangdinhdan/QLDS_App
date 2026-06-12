@@ -2,6 +2,7 @@ package com.example.mobile.model;
 
 public class Court {
     private final int id;
+    private String courtCode;
     private String name;
     private CourtStatus status;
     private double hourlyRate;
@@ -9,14 +10,19 @@ public class Court {
     private String imageUrl;
     private String estimatedCompletionDate;
 
-    public Court(int id, String name, CourtStatus status, double hourlyRate, String surfaceType, String imageUrl, String estimatedCompletionDate) {
+    public Court(int id, String courtCode, String name, CourtStatus status, double hourlyRate, String surfaceType, String imageUrl, String estimatedCompletionDate) {
         this.id = id;
+        this.courtCode = courtCode;
         this.name = name;
         this.status = status;
         this.hourlyRate = hourlyRate;
         this.surfaceType = surfaceType;
         this.imageUrl = imageUrl;
         this.estimatedCompletionDate = estimatedCompletionDate;
+    }
+
+    public Court(int id, String name, CourtStatus status, double hourlyRate, String surfaceType, String imageUrl, String estimatedCompletionDate) {
+        this(id, "PB-" + String.format("%02d", id), name, status, hourlyRate, surfaceType, imageUrl, estimatedCompletionDate);
     }
 
     public int getId() {
@@ -69,6 +75,14 @@ public class Court {
 
     public void setEstimatedCompletionDate(String estimatedCompletionDate) {
         this.estimatedCompletionDate = estimatedCompletionDate;
+    }
+
+    public String getCourtCode() {
+        return courtCode;
+    }
+
+    public void setCourtCode(String courtCode) {
+        this.courtCode = courtCode;
     }
 }
 

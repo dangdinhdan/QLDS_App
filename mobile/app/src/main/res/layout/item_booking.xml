@@ -15,96 +15,151 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Card Header -->
+        <!-- Top Section: Avatar, Details, and Status Badge -->
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/surface_header"
-            android:padding="12dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/text_booking_player"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Player Name"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/on_background"
+            <!-- Avatar -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_booking_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"/>
+                android:layout_centerVertical="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F1F3F5"
+                app:strokeWidth="0dp">
 
-            <TextView
-                android:id="@+id/text_booking_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2026-06-11"
-                android:textSize="13sp"
-                android:textColor="@color/secondary"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"/>
+                <ImageView
+                    android:id="@+id/image_booking_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_person_24"
+                    app:tint="#556679"
+                    android:contentDescription="Avatar" />
+            </com.google.android.material.card.MaterialCardView>
 
-        </RelativeLayout>
-
-        <!-- Card Body -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
-
+            <!-- Name and Court -->
             <LinearLayout
-                android:id="@+id/layout_booking_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_alignParentStart="true"
-                android:layout_toStartOf="@+id/button_cancel_booking"
-                android:layout_marginEnd="8dp">
+                android:layout_toEndOf="@id/card_booking_avatar"
+                android:layout_toStartOf="@id/text_booking_status"
+                android:layout_marginStart="12dp"
+                android:layout_centerVertical="true">
 
                 <TextView
-                    android:id="@+id/text_booking_court"
+                    android:id="@+id/text_booking_player"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Center Court"
+                    android:text="Nguyễn Văn An"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="@color/on_surface"/>
+                    android:textColor="@color/on_background" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_courts_24"
+                        app:tint="#556679"
+                        android:contentDescription="Court Icon" />
+
+                    <TextView
+                        android:id="@+id/text_booking_court"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sân Tennis 01"
+                        android:textSize="12sp"
+                        android:textColor="#556679"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Status Badge -->
+            <TextView
+                android:id="@+id/text_booking_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="Đang sử dụng"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#191E00"
+                android:background="@drawable/bg_chip_selected"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp" />
+
+        </RelativeLayout>
+
+        <!-- Divider Line (Optional but clean separation) -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#F1F3F5"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Bottom Section: Time and Action Icon -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Time Indicator (Clock Icon & Large Text) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true">
+
+                <ImageView
+                    android:id="@+id/image_clock_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_clock_24"
+                    app:tint="#556679"
+                    android:contentDescription="Clock" />
 
                 <TextView
                     android:id="@+id/text_booking_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Time: 08:00 - 10:00"
-                    android:textSize="14sp"
-                    android:textColor="@color/on_surface"
-                    android:layout_marginTop="4dp"/>
-
-                <TextView
-                    android:id="@+id/text_booking_fee"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Fee: $50.00"
-                    android:textSize="14sp"
+                    android:layout_marginStart="8dp"
+                    android:text="17:00 - 19:00"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@color/primary"
-                    android:layout_marginTop="4dp"/>
+                    android:textColor="@color/on_background" />
 
             </LinearLayout>
 
-            <!-- Cancel Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_cancel_booking"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textSize="13sp"
-                android:textColor="@color/tertiary"
+            <!-- Action Button / Icon (Three dots, Checkmark, Cancel circle) -->
+            <ImageButton
+                android:id="@+id/button_booking_action"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:minHeight="36dp"
-                android:paddingHorizontal="8dp"/>
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_more_vert_24"
+                app:tint="#556679"
+                android:contentDescription="Action Button" />
 
         </RelativeLayout>
 

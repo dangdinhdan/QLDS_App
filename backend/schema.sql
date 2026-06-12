@@ -19,6 +19,7 @@ CREATE TABLE tbl_san (
     ten VARCHAR(100) NOT NULL,
     loaimatsan VARCHAR(50),
     trangthai VARCHAR(50) DEFAULT 'Trong',
+    url VARCHAR(255),
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     delete_at DATETIME
 ) ENGINE=InnoDB;
@@ -106,11 +107,11 @@ INSERT INTO tbl_taikhoan (taikhoan, matkhau) VALUES
 ('nv_banhang', 'password123');
 
 -- 2. Courts (San)
-INSERT INTO tbl_san (ma_san, ten, loaimatsan, trangthai) VALUES 
-('SAN01', 'San Pickleball A (Standard)', 'Mat son', 'Trong'),
-('SAN02', 'San Pickleball B (Standard)', 'Mat son', 'Trong'),
-('SAN03', 'San Pickleball C (VIP)', 'Mat thap co', 'Trong'),
-('SAN04', 'San Pickleball D (Standard)', 'Mat son', 'Trong');
+INSERT INTO tbl_san (ma_san, ten, loaimatsan, trangthai, url) VALUES 
+('SAN01', 'San Pickleball A (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500'),
+('SAN02', 'San Pickleball B (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500'),
+('SAN03', 'San Pickleball C (VIP)', 'Mat thap co', 'Trong', 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=500'),
+('SAN04', 'San Pickleball D (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=500');
 
 -- 3. Price Charts (Bang Gia)
 INSERT INTO tbl_banggia (ma_banggia, batdau, ketthuc, dongia) VALUES 

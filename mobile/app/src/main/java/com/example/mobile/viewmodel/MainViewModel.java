@@ -73,4 +73,19 @@ public class MainViewModel extends ViewModel {
         repository.updateCourtStatus(courtId, status);
         refreshData();
     }
+
+    public void updateCourt(int courtId, String name, String surfaceType, CourtStatus status) {
+        repository.updateCourt(courtId, name, surfaceType, status);
+        refreshData();
+    }
+
+    public void deleteCourt(int courtId) {
+        repository.deleteCourt(courtId);
+        refreshData();
+    }
+
+    public void addCourt(Court court) {
+        repository.addCourt(court);
+        refreshData();
+    }
 }

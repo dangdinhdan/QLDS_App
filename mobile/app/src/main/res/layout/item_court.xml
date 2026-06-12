@@ -38,18 +38,31 @@
                 android:background="#99E1E3E4"
                 android:visibility="gone" />
 
+            <!-- Wrench icon for Maintenance -->
+            <ImageView
+                android:id="@+id/image_maintenance_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_analytics_24"
+                app:tint="@color/secondary"
+                android:visibility="gone"
+                android:contentDescription="Maintenance Icon" />
+
             <TextView
                 android:id="@+id/badge_court_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TRỐNG"
-                android:textSize="11sp"
+                android:text="Trống"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/on_primary"
                 android:background="@drawable/badge_empty"
                 android:gravity="center"
                 android:layout_gravity="end|top"
                 android:layout_margin="12dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
                 android:elevation="2dp" />
 
         </FrameLayout>
@@ -61,7 +74,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Title & Rate Row -->
+            <!-- Title & Menu Row -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -72,22 +85,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sân A1"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/on_background"
                     android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"/>
 
-                <TextView
-                    android:id="@+id/text_court_rate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="$15.00/hr"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/secondary"
+                <ImageButton
+                    android:id="@+id/button_court_menu"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"/>
+                    android:layout_centerVertical="true"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_more_vert_24"
+                    app:tint="#556679"
+                    android:contentDescription="Court Menu" />
 
             </RelativeLayout>
 
@@ -96,96 +109,76 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:gravity="center_vertical">
 
                 <ImageView
+                    android:id="@+id/image_surface_icon"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_courts_24"
-                    app:tint="@color/secondary"
-                    android:layout_marginEnd="6dp"/>
+                    app:tint="#556679"
+                    android:layout_marginEnd="6dp"
+                    android:contentDescription="Surface Icon"/>
 
                 <TextView
                     android:id="@+id/text_surface_type"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Mặt sân: Cứng"
-                    android:textSize="13sp"
-                    android:textColor="@color/secondary" />
+                    android:textSize="14sp"
+                    android:textColor="#556679" />
 
             </LinearLayout>
 
-            <!-- Status Details Info -->
-            <LinearLayout
-                android:id="@+id/layout_status_details"
-                android:layout_width="match_parent"
+        </LinearLayout>
+
+        <!-- Dynamic Action Tray (Visible on click selection) -->
+        <LinearLayout
+            android:id="@+id/layout_court_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <!-- Edit Button ("Sửa") -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_edit_court"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                android:background="#F8F9FA"
-                android:padding="8dp"
-                android:visibility="visible">
+                android:text="Sửa"
+                android:textSize="13sp"
+                android:textColor="#191E00"
+                android:textStyle="bold"
+                app:backgroundTint="@color/primary_container"
+                app:icon="@drawable/ic_edit_24"
+                app:iconTint="#191E00"
+                app:iconSize="16dp"
+                app:cornerRadius="4dp"
+                android:layout_marginEnd="8dp"
+                android:minHeight="38dp"/>
 
-                <ImageView
-                    android:id="@+id/image_detail_icon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_calendar_24"
-                    app:tint="@color/secondary"
-                    android:layout_marginEnd="6dp"/>
-
-                <TextView
-                    android:id="@+id/text_court_details"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Tiếp theo: 18:00 - Nguyễn Văn A"
-                    android:textSize="13sp"
-                    android:textColor="@color/on_surface" />
-
-            </LinearLayout>
-
-            <!-- Card Actions -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end"
-                android:layout_marginTop="4dp">
-
-                <!-- Secondary action button (Change Status) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_change_status"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cập nhật"
-                    android:textSize="13sp"
-                    android:textColor="@color/secondary"
-                    app:strokeColor="@color/secondary"
-                    app:strokeWidth="1dp"
-                    app:cornerRadius="4dp"
-                    android:layout_marginEnd="8dp"
-                    android:minHeight="36dp"
-                    android:paddingHorizontal="12dp"/>
-
-                <!-- Primary action button (Book Court) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_book_court"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Đặt ngay"
-                    android:textSize="13sp"
-                    android:textColor="@color/on_primary_container"
-                    android:textStyle="bold"
-                    app:backgroundTint="@color/primary_container"
-                    app:cornerRadius="4dp"
-                    android:minHeight="36dp"
-                    android:paddingHorizontal="12dp"/>
-
-            </LinearLayout>
+            <!-- Delete Button (Red trash icon) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_delete_court"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="48dp"
+                android:layout_height="38dp"
+                app:icon="@drawable/ic_delete_24"
+                app:iconTint="@color/tertiary"
+                app:iconSize="20dp"
+                app:strokeColor="@color/tertiary"
+                app:strokeWidth="1dp"
+                app:cornerRadius="4dp"
+                android:padding="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:contentDescription="Delete Court" />
 
         </LinearLayout>
 

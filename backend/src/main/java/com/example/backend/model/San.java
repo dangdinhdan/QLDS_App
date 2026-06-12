@@ -29,6 +29,9 @@ public class San {
     @Column(length = 50)
     private String trangthai;
 
+    @Column(length = 255)
+    private String url;
+
     @Column(name = "create_at", insertable = false, updatable = false)
     private LocalDateTime createAt;
 
