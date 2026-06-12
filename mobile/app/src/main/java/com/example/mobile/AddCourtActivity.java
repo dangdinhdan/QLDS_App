@@ -10,6 +10,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,15 +20,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
+import com.example.mobile.model.PriceTable;
 import com.example.mobile.repository.CourtRepository;
 import com.example.mobile.view.ImageLoader;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AddCourtActivity extends AppCompatActivity {
 
     private EditText editCourtCode;
     private EditText editCourtName;
+    private Spinner spinnerPriceTable;
     private TextView chipIndoor;
     private TextView chipOutdoor;
     private TextView chipGrass;
@@ -40,6 +46,8 @@ public class AddCourtActivity extends AppCompatActivity {
     private MaterialButton buttonSave;
     private ImageButton buttonClose;
 
+    private final List<PriceTable> priceTablesList = new ArrayList<>();
+    private Integer initialIdBanggia = null;
     private String selectedSurfaceType = "Trong nhà";
     private String selectedImageUrl = "";
     private int courtId = -1;
@@ -96,6 +104,11 @@ public class AddCourtActivity extends AppCompatActivity {
         initViews();
         setupListeners();
 
+        // Fetch price tables from backend
+        CourtRepository.getInstance().refreshPriceTablesFromBackend(() -> {
+            runOnUiThread(this::setupPriceTableSpinner);
+        });
+
         // Check if we are in Edit Mode
         courtId = getIntent().getIntExtra("court_id", -1);
         if (courtId != -1) {
@@ -107,6 +120,7 @@ public class AddCourtActivity extends AppCompatActivity {
     private void initViews() {
         editCourtCode = findViewById(R.id.edit_court_code);
         editCourtName = findViewById(R.id.edit_court_name);
+        spinnerPriceTable = findViewById(R.id.spinner_price_table);
         chipIndoor = findViewById(R.id.chip_indoor);
         chipOutdoor = findViewById(R.id.chip_outdoor);
         chipGrass = findViewById(R.id.chip_grass);
@@ -159,6 +173,7 @@ public class AddCourtActivity extends AppCompatActivity {
     private void loadCourtData() {
         editingCourt = CourtRepository.getInstance().getCourtById(courtId);
         if (editingCourt != null) {
+            initialIdBanggia = editingCourt.getIdBanggia();
             textScreenTitle.setText("Cập nhật thông tin sân");
             editCourtCode.setText(editingCourt.getCourtCode());
             editCourtName.setText(editingCourt.getName());
@@ -202,6 +217,36 @@ public class AddCourtActivity extends AppCompatActivity {
                 switchCourtStatus.setChecked(true);
                 textStatusLabel.setText("Đang hoạt động");
             }
+        }
+    }
+
+    private void setupPriceTableSpinner() {
+        List<String> labels = new ArrayList<>();
+        labels.add("Không áp dụng");
+
+        List<PriceTable> loadedPriceTables = CourtRepository.getInstance().getPriceTables();
+        priceTablesList.clear();
+        priceTablesList.addAll(loadedPriceTables);
+
+        for (PriceTable pt : priceTablesList) {
+            labels.add(pt.getTenbanggia());
+        }
+
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerPriceTable.setAdapter(adapter);
+
+        // Restore selection
+        if (initialIdBanggia != null) {
+            for (int i = 0; i < priceTablesList.size(); i++) {
+                if (priceTablesList.get(i).getId() == initialIdBanggia) {
+                    spinnerPriceTable.setSelection(i + 1);
+                    break;
+                }
+            }
+        } else {
+            spinnerPriceTable.setSelection(0);
         }
     }
 
@@ -256,11 +301,18 @@ public class AddCourtActivity extends AppCompatActivity {
             }
         }
 
+        Integer selectedIdBanggia = null;
+        int spinnerPos = spinnerPriceTable.getSelectedItemPosition();
+        if (spinnerPos > 0 && spinnerPos <= priceTablesList.size()) {
+            selectedIdBanggia = priceTablesList.get(spinnerPos - 1).getId();
+        }
+
         if (isEditMode) {
-            CourtRepository.getInstance().updateCourt(courtId, code, name, selectedSurfaceType, status, selectedImageUrl);
+            CourtRepository.getInstance().updateCourt(courtId, code, name, selectedSurfaceType, status, selectedImageUrl, selectedIdBanggia);
             Toast.makeText(this, "Cập nhật sân thành công!", Toast.LENGTH_SHORT).show();
         } else {
             Court newCourt = new Court(0, code, name, status, 15.0, selectedSurfaceType, selectedImageUrl, null);
+            newCourt.setIdBanggia(selectedIdBanggia);
             CourtRepository.getInstance().addCourt(newCourt);
             Toast.makeText(this, "Thêm sân mới thành công!", Toast.LENGTH_SHORT).show();
         }

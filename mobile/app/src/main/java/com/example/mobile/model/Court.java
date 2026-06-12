@@ -9,6 +9,7 @@ public class Court {
     private String surfaceType;
     private String imageUrl;
     private String estimatedCompletionDate;
+    private Integer idBanggia;
 
     public Court(int id, String courtCode, String name, CourtStatus status, double hourlyRate, String surfaceType, String imageUrl, String estimatedCompletionDate) {
         this.id = id;
@@ -83,6 +84,14 @@ public class Court {
 
     public void setCourtCode(String courtCode) {
         this.courtCode = courtCode;
+    }
+
+    public Integer getIdBanggia() {
+        return idBanggia;
+    }
+
+    public void setIdBanggia(Integer idBanggia) {
+        this.idBanggia = idBanggia;
     }
 }
 

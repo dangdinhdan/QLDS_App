@@ -3,27 +3,15 @@ CREATE DATABASE IF NOT EXISTS doan_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unic
 USE doan_db;
 
 -- Drop tables if they exist to start fresh (in correct order of dependencies)
-DROP TABLE IF EXISTS tbl_chitietdatsan;
 DROP TABLE IF EXISTS tbl_hoadon;
+DROP TABLE IF EXISTS tbl_chitietdatsan;
 DROP TABLE IF EXISTS tbl_phieudatsan;
 DROP TABLE IF EXISTS tbl_khachhang;
 DROP TABLE IF EXISTS tbl_banggia_san;
+DROP TABLE IF EXISTS tbl_san;
+DROP TABLE IF EXISTS tbl_banggiachitiet;
 DROP TABLE IF EXISTS tbl_banggia;
 DROP TABLE IF EXISTS tbl_taikhoan;
-DROP TABLE IF EXISTS tbl_san;
-
--- Table tbl_san
-CREATE TABLE tbl_san (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    ma_san VARCHAR(50) NOT NULL UNIQUE,
-    ten VARCHAR(100) NOT NULL,
-    loaimatsan VARCHAR(50),
-    trangthai VARCHAR(50) DEFAULT 'Trong',
-    url VARCHAR(255),
-    create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    delete_at DATETIME,
-    isdelete TINYINT(1) DEFAULT 0
-) ENGINE=InnoDB;
 
 -- Table tbl_taikhoan
 CREATE TABLE tbl_taikhoan (
@@ -37,24 +25,39 @@ CREATE TABLE tbl_taikhoan (
 CREATE TABLE tbl_banggia (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ma_banggia VARCHAR(50) NOT NULL UNIQUE,
-    batdau TIME NOT NULL,
-    ketthuc TIME NOT NULL,
-    dongia DECIMAL(10, 2) NOT NULL,
+    tenbanggia VARCHAR(100) NOT NULL,
+    mota VARCHAR(255),
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
     delete_at DATETIME,
     isdelete TINYINT(1) DEFAULT 0
 ) ENGINE=InnoDB;
 
--- Table tbl_banggia_san
-CREATE TABLE tbl_banggia_san (
-    id_san INT NOT NULL,
+-- Table tbl_banggiachitiet
+CREATE TABLE tbl_banggiachitiet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     id_banggia INT NOT NULL,
+    loaingay VARCHAR(50) NOT NULL,
+    giobatdau TIME NOT NULL,
+    giokethuc TIME NOT NULL,
+    dongia DECIMAL(10, 2) NOT NULL,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    update_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_san, id_banggia),
-    FOREIGN KEY (id_san) REFERENCES tbl_san(id) ON DELETE CASCADE,
     FOREIGN KEY (id_banggia) REFERENCES tbl_banggia(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Table tbl_san
+CREATE TABLE tbl_san (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_san VARCHAR(50) NOT NULL UNIQUE,
+    id_banggia INT,
+    ten VARCHAR(100) NOT NULL,
+    loaimatsan VARCHAR(50),
+    trangthai VARCHAR(50) DEFAULT 'Trong',
+    url VARCHAR(255),
+    create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    delete_at DATETIME,
+    isdelete TINYINT(1) DEFAULT 0,
+    FOREIGN KEY (id_banggia) REFERENCES tbl_banggia(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- Table tbl_khachhang
@@ -78,6 +81,19 @@ CREATE TABLE tbl_phieudatsan (
     FOREIGN KEY (id_khachhang) REFERENCES tbl_khachhang(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Table tbl_chitietdatsan
+CREATE TABLE tbl_chitietdatsan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_phieudatsan INT NOT NULL,
+    id_san INT NOT NULL,
+    giobatdau TIME NOT NULL,
+    giokethuc TIME NOT NULL,
+    dongia DECIMAL(10, 2) NOT NULL,
+    thanhtien DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (id_phieudatsan) REFERENCES tbl_phieudatsan(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_san) REFERENCES tbl_san(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- Table tbl_hoadon
 CREATE TABLE tbl_hoadon (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -88,19 +104,6 @@ CREATE TABLE tbl_hoadon (
     FOREIGN KEY (id_phieudatsan) REFERENCES tbl_phieudatsan(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Table tbl_chitietdatsan
-CREATE TABLE tbl_chitietdatsan (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_phieudatsan INT NOT NULL,
-    id_san INT NOT NULL,
-    giobatdau TIME NOT NULL,
-    gioketthuc TIME NOT NULL,
-    dongia DECIMAL(10, 2) NOT NULL,
-    thanhtien DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (id_phieudatsan) REFERENCES tbl_phieudatsan(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_san) REFERENCES tbl_san(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
-
 -- Insert Seed Data
 -- 1. Accounts (Tai Khoan)
 INSERT INTO tbl_taikhoan (taikhoan, matkhau) VALUES 
@@ -108,26 +111,26 @@ INSERT INTO tbl_taikhoan (taikhoan, matkhau) VALUES
 ('user1', 'user123'),
 ('nv_banhang', 'password123');
 
--- 2. Courts (San)
-INSERT INTO tbl_san (ma_san, ten, loaimatsan, trangthai, url) VALUES 
-('SAN01', 'San Pickleball A (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500'),
-('SAN02', 'San Pickleball B (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500'),
-('SAN03', 'San Pickleball C (VIP)', 'Mat thap co', 'Trong', 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=500'),
-('SAN04', 'San Pickleball D (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=500');
+-- 2. Price Charts (Bang Gia)
+INSERT INTO tbl_banggia (ma_banggia, tenbanggia, mota) VALUES 
+('BG_STANDARD', 'Bảng giá chuẩn', 'Áp dụng cho các ngày trong tuần và cuối tuần'),
+('BG_VIP', 'Bảng giá VIP', 'Áp dụng cho sân VIP');
 
--- 3. Price Charts (Bang Gia)
-INSERT INTO tbl_banggia (ma_banggia, batdau, ketthuc, dongia) VALUES 
-('BG_SANG', '05:00:00', '16:00:00', 80000.00),
-('BG_TOI', '16:00:00', '22:00:00', 120000.00);
+-- 3. Price Chart Details (Bang Gia Chi Tiet)
+INSERT INTO tbl_banggiachitiet (id_banggia, loaingay, giobatdau, giokethuc, dongia) VALUES 
+(1, 'Ngày thường', '05:00:00', '16:00:00', 80000.00),
+(1, 'Ngày thường', '16:00:00', '22:00:00', 120000.00),
+(1, 'Cuối tuần', '05:00:00', '22:00:00', 150000.00),
+(2, 'Ngày thường', '05:00:00', '16:00:00', 100000.00),
+(2, 'Ngày thường', '16:00:00', '22:00:00', 150000.00),
+(2, 'Cuối tuần', '05:00:00', '22:00:00', 200000.00);
 
--- 4. Court Price Mapping (Bang Gia - San)
-INSERT INTO tbl_banggia_san (id_san, id_banggia) VALUES 
-(1, 1), -- SAN01 - Sang
-(1, 2), -- SAN01 - Toi
-(2, 1), -- SAN02 - Sang
-(2, 2), -- SAN02 - Toi
-(3, 1), -- SAN03 - Sang (VIP uses same rate for now)
-(3, 2); -- SAN03 - Toi
+-- 4. Courts (San)
+INSERT INTO tbl_san (ma_san, ten, loaimatsan, trangthai, url, id_banggia) VALUES 
+('SAN01', 'San Pickleball A (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500', 1),
+('SAN02', 'San Pickleball B (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500', 1),
+('SAN03', 'San Pickleball C (VIP)', 'Mat thap co', 'Trong', 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=500', 2),
+('SAN04', 'San Pickleball D (Standard)', 'Mat son', 'Trong', 'https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=500', 1);
 
 -- 5. Customers (Khach Hang)
 INSERT INTO tbl_khachhang (ma_kh, ten, sdt) VALUES 
@@ -141,11 +144,10 @@ INSERT INTO tbl_phieudatsan (id_khachhang, ngaydat, trangthai, ghichu) VALUES
 (2, '2026-06-11', 'Cho xac nhan', 'Dat truoc san vip vao buoi toi');
 
 -- 7. Booking Details (Chi Tiet Dat San)
-INSERT INTO tbl_chitietdatsan (id_phieudatsan, id_san, giobatdau, gioketthuc, dongia, thanhtien) VALUES 
+INSERT INTO tbl_chitietdatsan (id_phieudatsan, id_san, giobatdau, giokethuc, dongia, thanhtien) VALUES 
 (1, 1, '08:00:00', '10:00:00', 80000.00, 160000.00), -- KH001 booking SAN01 for 2 hours
 (2, 3, '18:00:00', '20:00:00', 120000.00, 240000.00); -- KH002 booking SAN03 for 2 hours
 
 -- 8. Invoices (Hoa Don)
 INSERT INTO tbl_hoadon (ma_hoadon, id_phieudatsan, ghichu, tongtien) VALUES 
 ('HD001', 1, 'Hoa don thanh toan phieu dat san 1', 160000.00);
-

@@ -5,38 +5,32 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tbl_san")
+@Table(name = "tbl_banggia")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class San {
+public class Banggia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "ma_san", nullable = false, unique = true, length = 50)
-    private String maSan;
-
-    @Column(name = "id_banggia")
-    private Integer idBanggia;
+    @Column(name = "ma_banggia", nullable = false, unique = true, length = 50)
+    private String maBanggia;
 
     @Column(nullable = false, length = 100)
-    private String ten;
-
-    @Column(length = 50)
-    private String loaimatsan;
-
-    @Column(length = 50)
-    private String trangthai;
+    private String tenbanggia;
 
     @Column(length = 255)
-    private String url;
+    private String mota;
 
     @Column(name = "create_at", insertable = false, updatable = false)
     private LocalDateTime createAt;
+
+    @Column(name = "update_at", insertable = false, updatable = false)
+    private LocalDateTime updateAt;
 
     @Column(name = "delete_at")
     private LocalDateTime deleteAt;

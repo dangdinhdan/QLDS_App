@@ -4,6 +4,7 @@ import android.util.Log;
 import com.example.mobile.model.Booking;
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
+import com.example.mobile.model.PriceTable;
 import org.json.JSONObject;
 
 import java.io.OutputStream;
@@ -21,12 +22,14 @@ public class CourtRepository {
     private final ExecutorService executorService;
     private final List<Court> courts;
     private final List<Booking> bookings;
+    private final List<PriceTable> priceTables;
     private int nextBookingId = 5;
 
     private CourtRepository() {
         executorService = Executors.newSingleThreadExecutor();
         courts = new ArrayList<>();
         bookings = new ArrayList<>();
+        priceTables = new ArrayList<>();
         initMockData();
     }
 
@@ -55,6 +58,69 @@ public class CourtRepository {
 
     public List<Court> getAllCourts() {
         return new ArrayList<>(courts);
+    }
+
+    public List<PriceTable> getPriceTables() {
+        synchronized (priceTables) {
+            return new ArrayList<>(priceTables);
+        }
+    }
+
+    public void refreshPriceTablesFromBackend(Runnable onComplete) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("http://10.0.2.2:8080/api/banggia");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    java.io.InputStream inputStream = conn.getInputStream();
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            response.append(line.trim());
+                        }
+
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        if (jsonResponse.optBoolean("success", false)) {
+                            org.json.JSONArray data = jsonResponse.optJSONArray("data");
+                            if (data != null) {
+                                List<PriceTable> newPriceTables = new ArrayList<>();
+                                for (int i = 0; i < data.length(); i++) {
+                                    JSONObject obj = data.getJSONObject(i);
+                                    int id = obj.optInt("id", 0);
+                                    String maBanggia = obj.optString("maBanggia", "");
+                                    String tenbanggia = obj.optString("tenbanggia", "");
+                                    String mota = obj.optString("mota", "");
+                                    newPriceTables.add(new PriceTable(id, maBanggia, tenbanggia, mota));
+                                }
+                                synchronized (priceTables) {
+                                    priceTables.clear();
+                                    priceTables.addAll(newPriceTables);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Log.e("CourtRepository", "Lỗi tải bảng giá từ backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi tải danh sách bảng giá từ backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
     }
 
     public boolean isCourtCodeExists(String code) {
@@ -157,6 +223,7 @@ public class CourtRepository {
                 court.getImageUrl() != null ? court.getImageUrl() : "",
                 court.getEstimatedCompletionDate()
         );
+        newCourt.setIdBanggia(court.getIdBanggia());
         courts.add(newCourt);
 
         // Call backend API in background thread
@@ -176,6 +243,7 @@ public class CourtRepository {
                 jsonRequest.put("maSan", newCourt.getCourtCode());
                 jsonRequest.put("ten", newCourt.getName());
                 jsonRequest.put("loaimatsan", newCourt.getSurfaceType());
+                jsonRequest.put("idBanggia", newCourt.getIdBanggia() != null ? newCourt.getIdBanggia() : JSONObject.NULL);
 
                 String statusStr = "Trong";
                 if (newCourt.getStatus() == CourtStatus.MAINTENANCE) {
@@ -231,20 +299,74 @@ public class CourtRepository {
             court.setName(name);
             court.setSurfaceType(surfaceType);
             court.setStatus(status);
+            sendUpdateToBackend(court);
         }
     }
 
-    public void updateCourt(int courtId, String courtCode, String name, String surfaceType, CourtStatus status, String imageUrl) {
+    public void updateCourt(int courtId, String courtCode, String name, String surfaceType, CourtStatus status, String imageUrl, Integer idBanggia) {
         Court court = getCourtById(courtId);
         if (court != null) {
             court.setCourtCode(courtCode);
             court.setName(name);
             court.setSurfaceType(surfaceType);
             court.setStatus(status);
+            court.setIdBanggia(idBanggia);
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 court.setImageUrl(imageUrl);
             }
+            sendUpdateToBackend(court);
         }
+    }
+
+    private void sendUpdateToBackend(Court court) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(API_URL + "/" + court.getId());
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("PUT");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("maSan", court.getCourtCode());
+                jsonRequest.put("ten", court.getName());
+                jsonRequest.put("loaimatsan", court.getSurfaceType());
+                jsonRequest.put("idBanggia", court.getIdBanggia() != null ? court.getIdBanggia() : JSONObject.NULL);
+
+                String statusStr = "Trong";
+                if (court.getStatus() == CourtStatus.MAINTENANCE) {
+                    statusStr = "Bảo trì";
+                } else if (court.getStatus() == CourtStatus.IN_USE) {
+                    statusStr = "Đang sử dụng";
+                } else if (court.getStatus() == CourtStatus.BOOKED) {
+                    statusStr = "Đã đặt";
+                }
+                jsonRequest.put("trangthai", statusStr);
+                jsonRequest.put("url", court.getImageUrl());
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Cập nhật sân lên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi cập nhật sân lên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi cập nhật sân lên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        });
     }
 
     public boolean deleteCourt(int courtId) {
@@ -259,9 +381,37 @@ public class CourtRepository {
                 }
             }
             bookings.removeAll(toRemove);
+            sendDeleteToBackend(courtId);
             return true;
         }
         return false;
+    }
+
+    private void sendDeleteToBackend(int courtId) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(API_URL + "/" + courtId);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("DELETE");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Xóa sân trên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi xóa sân trên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi xóa sân trên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        });
     }
 
     public void refreshCourtsFromBackend(Runnable onComplete) {
@@ -310,7 +460,11 @@ public class CourtRepository {
                                         status = CourtStatus.BOOKED;
                                     }
 
-                                    newCourts.add(new Court(id, maSan, ten, status, 15.0, loaimatsan, urlStr, null));
+                                    Court courtItem = new Court(id, maSan, ten, status, 15.0, loaimatsan, urlStr, null);
+                                    if (!obj.isNull("idBanggia")) {
+                                        courtItem.setIdBanggia(obj.optInt("idBanggia"));
+                                    }
+                                    newCourts.add(courtItem);
                                 }
                                 synchronized (courts) {
                                     courts.clear();
