@@ -32,4 +32,70 @@ public class BanggiaController {
                     .build());
         }
     }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<Banggia>> createBanggia(@RequestBody Banggia banggia) {
+        try {
+            banggia.setId(null);
+            banggia.setIsdelete(false);
+            Banggia saved = banggiaRepository.save(banggia);
+            return ResponseEntity.ok(ApiResponse.<Banggia>builder()
+                    .success(true)
+                    .message("Thêm bảng giá thành công!")
+                    .data(saved)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.<Banggia>builder()
+                    .success(false)
+                    .message("Lỗi khi thêm bảng giá: " + e.getMessage())
+                    .build());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Banggia>> updateBanggia(@PathVariable Integer id, @RequestBody Banggia details) {
+        try {
+            return banggiaRepository.findById(id).map(banggia -> {
+                banggia.setMaBanggia(details.getMaBanggia());
+                banggia.setTenbanggia(details.getTenbanggia());
+                banggia.setMota(details.getMota());
+                Banggia saved = banggiaRepository.save(banggia);
+                return ResponseEntity.ok(ApiResponse.<Banggia>builder()
+                        .success(true)
+                        .message("Cập nhật bảng giá thành công!")
+                        .data(saved)
+                        .build());
+            }).orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.<Banggia>builder()
+                    .success(false)
+                    .message("Không tìm thấy bảng giá với ID: " + id)
+                    .build()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.<Banggia>builder()
+                    .success(false)
+                    .message("Lỗi khi cập nhật bảng giá: " + e.getMessage())
+                    .build());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteBanggia(@PathVariable Integer id) {
+        try {
+            return banggiaRepository.findById(id).map(banggia -> {
+                banggia.setIsdelete(true);
+                banggiaRepository.save(banggia);
+                return ResponseEntity.ok(ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Xóa bảng giá thành công!")
+                        .build());
+            }).orElseGet(() -> ResponseEntity.status(404).body(ApiResponse.<Void>builder()
+                        .success(false)
+                        .message("Không tìm thấy bảng giá với ID: " + id)
+                        .build()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.<Void>builder()
+                    .success(false)
+                    .message("Lỗi khi xóa bảng giá: " + e.getMessage())
+                    .build());
+        }
+    }
 }

@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".CreatePriceTableActivity">
+
+    <!-- Top Sticky Header -->
+    <RelativeLayout
+        android:id="@+id/layout_header"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/white"
+        android:paddingHorizontal="16dp"
+        android:elevation="1dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/button_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back_24"
+            android:contentDescription="Back"
+            app:tint="@color/primary" />
+
+        <TextView
+            android:id="@+id/text_screen_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Tạo bảng giá mới"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/on_background"
+            android:letterSpacing="-0.01" />
+
+    </RelativeLayout>
+
+    <!-- Scrollable Create Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/layout_header"
+        app:layout_constraintBottom_toTopOf="@id/layout_bottom_actions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- Breadcrumbs -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cấu hình › Bảng giá › Tạo mới"
+                android:textSize="12sp"
+                android:textColor="#556679"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp" />
+
+            <!-- Main Title Banner -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tạo bảng giá"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/on_background"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="4dp"
+                android:letterSpacing="-0.01" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thiết lập chính sách giá linh hoạt theo khung giờ và loại ngày cho sân tập."
+                android:textSize="13sp"
+                android:textColor="#556679"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="16dp" />
+
+            <!-- Card: Thông tin cơ bản -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Thông tin cơ bản"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/on_surface"
+                        android:background="@color/surface_header"
+                        android:padding="12dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- Code input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mã bảng giá (ma_banggia)"
+                            android:textSize="13sp"
+                            android:textColor="#556679"
+                            android:layout_marginBottom="4dp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edit_create_code"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/input_field_bg"
+                            android:paddingHorizontal="12dp"
+                            android:inputType="text"
+                            android:hint="Ví dụ: BG_01"
+                            android:textColorHint="#9E9E9E"
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface"
+                            android:layout_marginBottom="16dp"
+                            android:textCursorDrawable="@null"/>
+
+                        <!-- Name input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tên bảng giá (tenbanggia)"
+                            android:textSize="13sp"
+                            android:textColor="#556679"
+                            android:layout_marginBottom="4dp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edit_create_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/input_field_bg"
+                            android:paddingHorizontal="12dp"
+                            android:inputType="text"
+                            android:hint="Bảng giá tiêu chuẩn 2024"
+                            android:textColorHint="#9E9E9E"
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface"
+                            android:layout_marginBottom="16dp"
+                            android:textCursorDrawable="@null"/>
+
+                        <!-- Description input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mô tả (mota)"
+                            android:textSize="13sp"
+                            android:textColor="#556679"
+                            android:layout_marginBottom="4dp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edit_create_desc"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:background="@drawable/input_field_bg"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="8dp"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:lines="4"
+                            android:hint="Áp dụng cho tất cả các sân trong hệ thống"
+                            android:textColorHint="#9E9E9E"
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface"
+                            android:textCursorDrawable="@null"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card: Chi tiết đơn giá (Price Details) -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/surface_header"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chi tiết đơn giá (Price Details)"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_surface"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_add_slot"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:text="Thêm khung giờ"
+                            android:textSize="11sp"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/primary"
+                            app:icon="@drawable/ic_add_24"
+                            app:iconTint="@color/white"
+                            app:iconSize="14dp"
+                            app:cornerRadius="4dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="6dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"/>
+
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <!-- Table Headers Layout -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp"
+                            android:layout_marginBottom="4dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2"
+                                android:text="Loại ngày"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#556679" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.9"
+                                android:text="Bắt đầu"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#556679" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.9"
+                                android:text="Kết thúc"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#556679" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.1"
+                                android:text="Đơn giá (đ)"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#556679" />
+
+                            <View
+                                android:layout_width="36dp"
+                                android:layout_height="0dp" />
+
+                        </LinearLayout>
+
+                        <!-- Dynamic slots container -->
+                        <LinearLayout
+                            android:id="@+id/layout_slots_container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card: Mẹo định giá -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/secondary_container"
+                app:cardBackgroundColor="#F2F8FF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="top">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_analytics_24"
+                        app:tint="@color/secondary"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Tip icon"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mẹo định giá"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/secondary"
+                            android:layout_marginBottom="4dp"/>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Hãy thiết lập các khung giờ 'Giờ Vàng' (17:00 - 22:00) với mức giá cao hơn 20-30% để tối ưu hóa hiệu suất khai thác sân của bạn."
+                            android:textSize="13sp"
+                            android:textColor="@color/on_secondary_container"
+                            android:lineSpacingExtra="2dp"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Sticky Actions Tray -->
+    <LinearLayout
+        android:id="@+id/layout_bottom_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Cancel Button ("Hủy bỏ") -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_cancel"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:text="Hủy bỏ"
+            android:textSize="14sp"
+            android:textColor="@color/secondary"
+            android:textStyle="bold"
+            app:strokeColor="@color/border_gray"
+            app:strokeWidth="1dp"
+            app:icon="@drawable/ic_cancel_24"
+            app:iconTint="@color/secondary"
+            app:iconSize="18dp"
+            app:cornerRadius="8dp"
+            android:layout_marginEnd="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
+
+        <!-- Save Button ("Lưu bảng giá") -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_save"
+            android:layout_width="0dp"
+            android:layout_weight="1.2"
+            android:layout_height="48dp"
+            android:text="Lưu bảng giá"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary"
+            app:icon="@drawable/ic_save_24"
+            app:iconTint="@color/white"
+            app:iconSize="18dp"
+            app:cornerRadius="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

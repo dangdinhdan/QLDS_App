@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.mobile.model.Booking;
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
+import com.example.mobile.model.PriceTable;
 import com.example.mobile.repository.CourtRepository;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class MainViewModel extends ViewModel {
 
     private final MutableLiveData<List<Court>> courtsLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<Booking>> bookingsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<PriceTable>> priceTablesLiveData = new MutableLiveData<>();
     private final MutableLiveData<Double> occupancyRateLiveData = new MutableLiveData<>();
     private final MutableLiveData<Double> totalRevenueLiveData = new MutableLiveData<>();
     private final MutableLiveData<Integer> activeCourtsLiveData = new MutableLiveData<>();
@@ -32,6 +34,10 @@ public class MainViewModel extends ViewModel {
 
     public LiveData<List<Booking>> getBookings() {
         return bookingsLiveData;
+    }
+
+    public LiveData<List<PriceTable>> getPriceTables() {
+        return priceTablesLiveData;
     }
 
     public LiveData<Double> getOccupancyRate() {
@@ -53,6 +59,7 @@ public class MainViewModel extends ViewModel {
     public void refreshDataLocalOnly() {
         courtsLiveData.postValue(repository.getAllCourts());
         bookingsLiveData.postValue(repository.getBookings());
+        priceTablesLiveData.postValue(repository.getPriceTables());
         occupancyRateLiveData.postValue(repository.getOccupancyRate());
         totalRevenueLiveData.postValue(repository.getTotalRevenue());
         activeCourtsLiveData.postValue(repository.getActiveCourtsCount());
@@ -62,6 +69,7 @@ public class MainViewModel extends ViewModel {
     public void refreshData() {
         refreshDataLocalOnly();
         repository.refreshCourtsFromBackend(this::refreshDataLocalOnly);
+        repository.refreshPriceTablesFromBackend(this::refreshDataLocalOnly);
     }
 
     public void addBooking(Booking booking) {
@@ -91,6 +99,21 @@ public class MainViewModel extends ViewModel {
 
     public void addCourt(Court court) {
         repository.addCourt(court, this::refreshData);
+        refreshDataLocalOnly();
+    }
+
+    public void addPriceTable(PriceTable pt) {
+        repository.addPriceTable(pt, this::refreshData);
+        refreshDataLocalOnly();
+    }
+
+    public void updatePriceTable(PriceTable pt) {
+        repository.updatePriceTable(pt, this::refreshData);
+        refreshDataLocalOnly();
+    }
+
+    public void deletePriceTable(int id) {
+        repository.deletePriceTable(id, this::refreshData);
         refreshDataLocalOnly();
     }
 }

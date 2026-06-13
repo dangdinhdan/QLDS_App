@@ -29,6 +29,12 @@
         <activity 
             android:name=".AddCourtActivity"
             android:windowSoftInputMode="adjustPan" />
+        <activity 
+            android:name=".PriceTableDetailActivity"
+            android:windowSoftInputMode="adjustPan" />
+        <activity 
+            android:name=".CreatePriceTableActivity"
+            android:windowSoftInputMode="adjustPan" />
     </application>
 
 </manifest>

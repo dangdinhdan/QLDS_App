@@ -27,7 +27,10 @@ import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
 import com.example.mobile.view.BookingAdapter;
 import com.example.mobile.view.CourtAdapter;
+import com.example.mobile.model.PriceTable;
+import com.example.mobile.view.PriceTableAdapter;
 import com.example.mobile.viewmodel.MainViewModel;
+import android.view.ViewGroup;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.button.MaterialButton;
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private View scrollHome;
     private View layoutCourtsTab;
     private View layoutBookingsTab;
+    private View layoutPricingTab;
     private View scrollStatsTab;
 
     // Dashboard Views (Home Tab)
@@ -55,8 +59,10 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     // Recyclers and adapters
     private RecyclerView recyclerCourts;
     private RecyclerView recyclerBookings;
+    private RecyclerView recyclerPriceTables;
     private CourtAdapter courtAdapter;
     private BookingAdapter bookingAdapter;
+    private PriceTableAdapter priceTableAdapter;
 
     // Stats Views
     private TextView textStatsOccupancy;
@@ -67,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     // Keep cached lists of data
     private List<Court> cachedCourts = new ArrayList<>();
     private List<Booking> cachedBookings = new ArrayList<>();
+    private List<PriceTable> cachedPriceTables = new ArrayList<>();
 
     // Search and Filter in Courts Tab
     private EditText editSearchCourts;
@@ -77,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private TextView chipFilterMaintenance;
     private String selectedFilter = "Tất cả";
     private String searchQuery = "";
+    private EditText editSearchPriceTables;
+    private String ptSearchQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         scrollHome = findViewById(R.id.scroll_home);
         layoutCourtsTab = findViewById(R.id.layout_courts_tab);
         layoutBookingsTab = findViewById(R.id.layout_bookings_tab);
+        layoutPricingTab = findViewById(R.id.layout_pricing_tab);
         scrollStatsTab = findViewById(R.id.scroll_stats_tab);
 
         // Dashboard metrics
@@ -121,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         // Recyclers
         recyclerCourts = findViewById(R.id.recycler_courts);
         recyclerBookings = findViewById(R.id.recycler_bookings);
+        recyclerPriceTables = findViewById(R.id.recycler_price_tables);
 
         // Stats elements
         textStatsOccupancy = findViewById(R.id.text_stats_occupancy);
@@ -130,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
         // Search & Filter in Courts Tab
         editSearchCourts = findViewById(R.id.edit_search_courts);
+        editSearchPriceTables = findViewById(R.id.edit_search_price_tables);
         chipFilterAll = findViewById(R.id.chip_filter_all);
         chipFilterEmpty = findViewById(R.id.chip_filter_empty);
         chipFilterInUse = findViewById(R.id.chip_filter_in_use);
@@ -147,8 +159,8 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             } else if (itemId == R.id.navigation_courts) {
                 showTab(layoutCourtsTab);
                 return true;
-            } else if (itemId == R.id.navigation_bookings) {
-                showTab(layoutBookingsTab);
+            } else if (itemId == R.id.navigation_pricing) {
+                showTab(layoutPricingTab);
                 return true;
             } else if (itemId == R.id.navigation_stats) {
                 showTab(scrollStatsTab);
@@ -167,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         scrollHome.setVisibility(View.GONE);
         layoutCourtsTab.setVisibility(View.GONE);
         layoutBookingsTab.setVisibility(View.GONE);
+        layoutPricingTab.setVisibility(View.GONE);
         scrollStatsTab.setVisibility(View.GONE);
 
         activeTab.setVisibility(View.VISIBLE);
@@ -182,6 +195,23 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         recyclerBookings.setLayoutManager(new LinearLayoutManager(this));
         bookingAdapter = new BookingAdapter(this);
         recyclerBookings.setAdapter(bookingAdapter);
+
+        // Pricing list config
+        recyclerPriceTables.setLayoutManager(new LinearLayoutManager(this));
+        priceTableAdapter = new PriceTableAdapter(new PriceTableAdapter.OnPriceTableActionListener() {
+            @Override
+            public void onEditPriceTable(PriceTable pt) {
+                showEditPriceTableDialog(pt);
+            }
+
+            @Override
+            public void onDetailPriceTable(PriceTable pt) {
+                Intent intent = new Intent(MainActivity.this, PriceTableDetailActivity.class);
+                intent.putExtra("price_table_id", pt.getId());
+                startActivity(intent);
+            }
+        });
+        recyclerPriceTables.setAdapter(priceTableAdapter);
     }
 
     private void setupActions() {
@@ -275,6 +305,32 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         chipFilterInUse.setOnClickListener(v -> selectFilterChip("Đang dùng"));
         chipFilterBooked.setOnClickListener(v -> selectFilterChip("Đã đặt"));
         chipFilterMaintenance.setOnClickListener(v -> selectFilterChip("Bảo trì"));
+
+        // Price table search textwatcher
+        if (editSearchPriceTables != null) {
+            editSearchPriceTables.addTextChangedListener(new android.text.TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    ptSearchQuery = s.toString().trim();
+                    filterAndApplyPriceTables();
+                }
+
+                @Override
+                public void afterTextChanged(android.text.Editable s) {}
+            });
+        }
+
+        // Add Price Table action
+        View buttonAddPriceTable = findViewById(R.id.button_add_price_table);
+        if (buttonAddPriceTable != null) {
+            buttonAddPriceTable.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(MainActivity.this, CreatePriceTableActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     private void setupCalendarStrip() {
@@ -368,6 +424,14 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         viewModel.getMostPopularCourt().observe(this, popularCourt -> {
             if (popularCourt != null) {
                 textStatsPopularCourt.setText(popularCourt);
+            }
+        });
+
+        // Observe price tables list
+        viewModel.getPriceTables().observe(this, priceTables -> {
+            if (priceTables != null) {
+                cachedPriceTables = priceTables;
+                filterAndApplyPriceTables();
             }
         });
     }
@@ -853,5 +917,150 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             }
         }
         courtAdapter.setData(filtered, cachedBookings);
+    }
+
+    // ================= Price Table Management =================
+
+    private void filterAndApplyPriceTables() {
+        if (cachedPriceTables == null) return;
+        List<PriceTable> filtered = new ArrayList<>();
+        for (PriceTable pt : cachedPriceTables) {
+            boolean matchesSearch = TextUtils.isEmpty(ptSearchQuery) || 
+                    (pt.getTenbanggia() != null && pt.getTenbanggia().toLowerCase().contains(ptSearchQuery.toLowerCase())) ||
+                    (pt.getMaBanggia() != null && pt.getMaBanggia().toLowerCase().contains(ptSearchQuery.toLowerCase())) ||
+                    (pt.getMota() != null && pt.getMota().toLowerCase().contains(ptSearchQuery.toLowerCase()));
+
+            if (matchesSearch) {
+                filtered.add(pt);
+            }
+        }
+        if (priceTableAdapter != null) {
+            priceTableAdapter.setData(filtered);
+        }
+    }
+
+    private void showAddPriceTableDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thêm bảng giá mới");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int) (18 * getResources().getDisplayMetrics().density);
+        layout.setPadding(padding, padding, padding, padding);
+
+        final EditText editCode = new EditText(this);
+        editCode.setHint("Mã bảng giá (ví dụ: BG_STANDARD)");
+        editCode.setSingleLine(true);
+        layout.addView(editCode);
+
+        final EditText editName = new EditText(this);
+        editName.setHint("Tên bảng giá (ví dụ: Bảng giá chuẩn)");
+        editName.setSingleLine(true);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = (int) (12 * getResources().getDisplayMetrics().density);
+        editName.setLayoutParams(params);
+        layout.addView(editName);
+
+        final EditText editDesc = new EditText(this);
+        editDesc.setHint("Mô tả (ví dụ: Áp dụng từ Thứ 2 đến Thứ 6)");
+        editDesc.setSingleLine(false);
+        editDesc.setLines(2);
+        editDesc.setLayoutParams(params);
+        layout.addView(editDesc);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Thêm", (dialog, which) -> {
+            String code = editCode.getText().toString().trim();
+            String name = editName.getText().toString().trim();
+            String desc = editDesc.getText().toString().trim();
+
+            if (TextUtils.isEmpty(code)) {
+                Toast.makeText(this, "Vui lòng nhập mã bảng giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (TextUtils.isEmpty(name)) {
+                Toast.makeText(this, "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            PriceTable pt = new PriceTable(0, code, name, desc);
+            viewModel.addPriceTable(pt);
+            Toast.makeText(this, "Đã thêm bảng giá thành công!", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setNegativeButton("Hủy", null);
+        builder.show();
+    }
+
+    private void showEditPriceTableDialog(PriceTable pt) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Sửa bảng giá");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int) (18 * getResources().getDisplayMetrics().density);
+        layout.setPadding(padding, padding, padding, padding);
+
+        final EditText editCode = new EditText(this);
+        editCode.setHint("Mã bảng giá (ví dụ: BG_STANDARD)");
+        editCode.setText(pt.getMaBanggia());
+        editCode.setSingleLine(true);
+        layout.addView(editCode);
+
+        final EditText editName = new EditText(this);
+        editName.setHint("Tên bảng giá (ví dụ: Bảng giá chuẩn)");
+        editName.setText(pt.getTenbanggia());
+        editName.setSingleLine(true);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = (int) (12 * getResources().getDisplayMetrics().density);
+        editName.setLayoutParams(params);
+        layout.addView(editName);
+
+        final EditText editDesc = new EditText(this);
+        editDesc.setHint("Mô tả (ví dụ: Áp dụng từ Thứ 2 đến Thứ 6)");
+        editDesc.setText(pt.getMota());
+        editDesc.setSingleLine(false);
+        editDesc.setLines(2);
+        editDesc.setLayoutParams(params);
+        layout.addView(editDesc);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Lưu", (dialog, which) -> {
+            String code = editCode.getText().toString().trim();
+            String name = editName.getText().toString().trim();
+            String desc = editDesc.getText().toString().trim();
+
+            if (TextUtils.isEmpty(code)) {
+                Toast.makeText(this, "Vui lòng nhập mã bảng giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (TextUtils.isEmpty(name)) {
+                Toast.makeText(this, "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            PriceTable updated = new PriceTable(pt.getId(), code, name, desc);
+            viewModel.updatePriceTable(updated);
+            Toast.makeText(this, "Cập nhật bảng giá thành công!", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setNegativeButton("Hủy", null);
+        builder.show();
+    }
+
+    private void showDeletePriceTableDialog(PriceTable pt) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa bảng giá")
+                .setMessage("Bạn có chắc chắn muốn xóa bảng giá \"" + pt.getTenbanggia() + "\"? Thao tác này không thể hoàn tác.")
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    viewModel.deletePriceTable(pt.getId());
+                    Toast.makeText(MainActivity.this, "Đã xóa bảng giá thành công!", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 }

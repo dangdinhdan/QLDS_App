@@ -951,6 +951,119 @@
 
         </LinearLayout>
 
+        <!-- ================= PRICING TAB ================= -->
+        <LinearLayout
+            android:id="@+id/layout_pricing_tab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="Quản lý bảng giá"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/on_background" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add_price_table"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Thêm bảng giá"
+                    android:textSize="12sp"
+                    android:textColor="#191E00"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/primary_container"
+                    app:icon="@drawable/ic_add_24"
+                    app:iconTint="#191E00"
+                    app:iconSize="16dp"
+                    app:cornerRadius="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp"
+                    android:minHeight="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thiết lập các bảng giá và khung giờ áp dụng cho các loại sân."
+                android:textSize="13sp"
+                android:textColor="#556679"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="8dp" />
+
+            <!-- Search Bar for Price Tables -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginVertical="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:id="@+id/image_search_pt_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:src="@android:drawable/ic_menu_search"
+                        app:tint="@color/secondary"
+                        android:contentDescription="Search Icon" />
+
+                    <EditText
+                        android:id="@+id/edit_search_price_tables"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/image_search_pt_icon"
+                        android:layout_marginStart="10dp"
+                        android:background="@android:color/transparent"
+                        android:hint="Tìm kiếm bảng giá..."
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:paddingVertical="12dp"
+                        android:textSize="14sp"
+                        android:textColor="@color/on_background"
+                        android:textColorHint="@color/outline" />
+
+                </RelativeLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_price_tables"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp" />
+
+        </LinearLayout>
+
         <!-- ================= STATS TAB ================= -->
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scroll_stats_tab"

@@ -13,6 +13,10 @@
         android:icon="@drawable/ic_calendar_24"
         android:title="Bookings" />
     <item
+        android:id="@+id/navigation_pricing"
+        android:icon="@drawable/ic_pricing_24"
+        android:title="Pricing" />
+    <item
         android:id="@+id/navigation_stats"
         android:icon="@drawable/ic_analytics_24"
         android:title="Stats" />

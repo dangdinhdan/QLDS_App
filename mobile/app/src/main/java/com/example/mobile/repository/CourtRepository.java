@@ -123,6 +123,155 @@ public class CourtRepository {
         });
     }
 
+    public void addPriceTable(PriceTable pt, Runnable onComplete) {
+        int nextId = 1;
+        synchronized (priceTables) {
+            for (PriceTable p : priceTables) {
+                if (p.getId() >= nextId) {
+                    nextId = p.getId() + 1;
+                }
+            }
+        }
+        PriceTable newPt = new PriceTable(nextId, pt.getMaBanggia(), pt.getTenbanggia(), pt.getMota());
+        synchronized (priceTables) {
+            priceTables.add(newPt);
+        }
+
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("http://10.0.2.2:8080/api/banggia");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("maBanggia", newPt.getMaBanggia());
+                jsonRequest.put("tenbanggia", newPt.getTenbanggia());
+                jsonRequest.put("mota", newPt.getMota());
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Thêm bảng giá lên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi thêm bảng giá lên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi thêm bảng giá lên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
+    public void updatePriceTable(PriceTable pt, Runnable onComplete) {
+        synchronized (priceTables) {
+            for (int i = 0; i < priceTables.size(); i++) {
+                if (priceTables.get(i).getId() == pt.getId()) {
+                    priceTables.set(i, pt);
+                    break;
+                }
+            }
+        }
+
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("http://10.0.2.2:8080/api/banggia/" + pt.getId());
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("PUT");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("maBanggia", pt.getMaBanggia());
+                jsonRequest.put("tenbanggia", pt.getTenbanggia());
+                jsonRequest.put("mota", pt.getMota());
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Cập nhật bảng giá lên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi cập nhật bảng giá lên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi cập nhật bảng giá lên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
+    public void deletePriceTable(int id, Runnable onComplete) {
+        synchronized (priceTables) {
+            PriceTable target = null;
+            for (PriceTable p : priceTables) {
+                if (p.getId() == id) {
+                    target = p;
+                    break;
+                }
+            }
+            if (target != null) {
+                priceTables.remove(target);
+            }
+        }
+
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL("http://10.0.2.2:8080/api/banggia/" + id);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("DELETE");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Xóa bảng giá trên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi xóa bảng giá trên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi xóa bảng giá trên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
     public boolean isCourtCodeExists(String code) {
         if (code == null) return false;
         for (Court c : courts) {
