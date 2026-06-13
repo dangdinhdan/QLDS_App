@@ -4,7 +4,9 @@ import android.util.Log;
 import com.example.mobile.model.Booking;
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
+import com.example.mobile.model.PriceSlot;
 import com.example.mobile.model.PriceTable;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.OutputStream;
@@ -98,7 +100,26 @@ public class CourtRepository {
                                     String maBanggia = obj.optString("maBanggia", "");
                                     String tenbanggia = obj.optString("tenbanggia", "");
                                     String mota = obj.optString("mota", "");
-                                    newPriceTables.add(new PriceTable(id, maBanggia, tenbanggia, mota));
+                                    List<PriceSlot> details = new ArrayList<>();
+                                    JSONArray detailsArray = obj.optJSONArray("details");
+                                    if (detailsArray != null) {
+                                        for (int j = 0; j < detailsArray.length(); j++) {
+                                            JSONObject detailObj = detailsArray.getJSONObject(j);
+                                            int detailId = detailObj.optInt("id", 0);
+                                            String loaingay = detailObj.optString("loaingay", "");
+                                            String giobatdau = detailObj.optString("giobatdau", "");
+                                            String giokethuc = detailObj.optString("giokethuc", "");
+                                            double dongia = detailObj.optDouble("dongia", 0.0);
+                                            if (giobatdau.length() > 5) {
+                                                giobatdau = giobatdau.substring(0, 5);
+                                            }
+                                            if (giokethuc.length() > 5) {
+                                                giokethuc = giokethuc.substring(0, 5);
+                                            }
+                                            details.add(new PriceSlot(detailId, loaingay, giobatdau, giokethuc, dongia));
+                                        }
+                                    }
+                                    newPriceTables.add(new PriceTable(id, maBanggia, tenbanggia, mota, details));
                                 }
                                 synchronized (priceTables) {
                                     priceTables.clear();
@@ -132,7 +153,7 @@ public class CourtRepository {
                 }
             }
         }
-        PriceTable newPt = new PriceTable(nextId, pt.getMaBanggia(), pt.getTenbanggia(), pt.getMota());
+        PriceTable newPt = new PriceTable(nextId, pt.getMaBanggia(), pt.getTenbanggia(), pt.getMota(), pt.getDetails());
         synchronized (priceTables) {
             priceTables.add(newPt);
         }
@@ -153,6 +174,21 @@ public class CourtRepository {
                 jsonRequest.put("maBanggia", newPt.getMaBanggia());
                 jsonRequest.put("tenbanggia", newPt.getTenbanggia());
                 jsonRequest.put("mota", newPt.getMota());
+
+                JSONArray detailsArray = new JSONArray();
+                for (PriceSlot slot : pt.getDetails()) {
+                    JSONObject slotObj = new JSONObject();
+                    slotObj.put("loaingay", slot.getLoaingay());
+                    String start = slot.getGiobatdau();
+                    if (start.length() == 5) start += ":00";
+                    String end = slot.getGiokethuc();
+                    if (end.length() == 5) end += ":00";
+                    slotObj.put("giobatdau", start);
+                    slotObj.put("giokethuc", end);
+                    slotObj.put("dongia", slot.getDongia());
+                    detailsArray.put(slotObj);
+                }
+                jsonRequest.put("details", detailsArray);
 
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
@@ -204,6 +240,21 @@ public class CourtRepository {
                 jsonRequest.put("maBanggia", pt.getMaBanggia());
                 jsonRequest.put("tenbanggia", pt.getTenbanggia());
                 jsonRequest.put("mota", pt.getMota());
+
+                JSONArray detailsArray = new JSONArray();
+                for (PriceSlot slot : pt.getDetails()) {
+                    JSONObject slotObj = new JSONObject();
+                    slotObj.put("loaingay", slot.getLoaingay());
+                    String start = slot.getGiobatdau();
+                    if (start.length() == 5) start += ":00";
+                    String end = slot.getGiokethuc();
+                    if (end.length() == 5) end += ":00";
+                    slotObj.put("giobatdau", start);
+                    slotObj.put("giokethuc", end);
+                    slotObj.put("dongia", slot.getDongia());
+                    detailsArray.put(slotObj);
+                }
+                jsonRequest.put("details", detailsArray);
 
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);

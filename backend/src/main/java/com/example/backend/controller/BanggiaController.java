@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.ApiResponse;
 import com.example.backend.model.Banggia;
+import com.example.backend.model.Banggiachitiet;
 import com.example.backend.repository.BanggiaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,11 @@ public class BanggiaController {
         try {
             banggia.setId(null);
             banggia.setIsdelete(false);
+            if (banggia.getDetails() != null) {
+                for (Banggiachitiet detail : banggia.getDetails()) {
+                    detail.setBanggia(banggia);
+                }
+            }
             Banggia saved = banggiaRepository.save(banggia);
             return ResponseEntity.ok(ApiResponse.<Banggia>builder()
                     .success(true)
@@ -59,6 +65,27 @@ public class BanggiaController {
                 banggia.setMaBanggia(details.getMaBanggia());
                 banggia.setTenbanggia(details.getTenbanggia());
                 banggia.setMota(details.getMota());
+                
+                // Clear old details and set parent for new details to trigger cascade updates
+                if (banggia.getDetails() != null) {
+                    banggia.getDetails().clear();
+                    if (details.getDetails() != null) {
+                        for (Banggiachitiet newDetail : details.getDetails()) {
+                            newDetail.setId(null);
+                            newDetail.setBanggia(banggia);
+                            banggia.getDetails().add(newDetail);
+                        }
+                    }
+                } else if (details.getDetails() != null) {
+                    java.util.List<Banggiachitiet> detailsList = new java.util.ArrayList<>();
+                    for (Banggiachitiet newDetail : details.getDetails()) {
+                        newDetail.setId(null);
+                        newDetail.setBanggia(banggia);
+                        detailsList.add(newDetail);
+                    }
+                    banggia.setDetails(detailsList);
+                }
+                
                 Banggia saved = banggiaRepository.save(banggia);
                 return ResponseEntity.ok(ApiResponse.<Banggia>builder()
                         .success(true)

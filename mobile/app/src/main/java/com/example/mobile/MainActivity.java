@@ -201,7 +201,9 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         priceTableAdapter = new PriceTableAdapter(new PriceTableAdapter.OnPriceTableActionListener() {
             @Override
             public void onEditPriceTable(PriceTable pt) {
-                showEditPriceTableDialog(pt);
+                Intent intent = new Intent(MainActivity.this, CreatePriceTableActivity.class);
+                intent.putExtra("price_table_id", pt.getId());
+                startActivity(intent);
             }
 
             @Override
@@ -939,118 +941,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         }
     }
 
-    private void showAddPriceTableDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Thêm bảng giá mới");
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = (int) (18 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding, padding, padding);
-
-        final EditText editCode = new EditText(this);
-        editCode.setHint("Mã bảng giá (ví dụ: BG_STANDARD)");
-        editCode.setSingleLine(true);
-        layout.addView(editCode);
-
-        final EditText editName = new EditText(this);
-        editName.setHint("Tên bảng giá (ví dụ: Bảng giá chuẩn)");
-        editName.setSingleLine(true);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.topMargin = (int) (12 * getResources().getDisplayMetrics().density);
-        editName.setLayoutParams(params);
-        layout.addView(editName);
-
-        final EditText editDesc = new EditText(this);
-        editDesc.setHint("Mô tả (ví dụ: Áp dụng từ Thứ 2 đến Thứ 6)");
-        editDesc.setSingleLine(false);
-        editDesc.setLines(2);
-        editDesc.setLayoutParams(params);
-        layout.addView(editDesc);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Thêm", (dialog, which) -> {
-            String code = editCode.getText().toString().trim();
-            String name = editName.getText().toString().trim();
-            String desc = editDesc.getText().toString().trim();
-
-            if (TextUtils.isEmpty(code)) {
-                Toast.makeText(this, "Vui lòng nhập mã bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (TextUtils.isEmpty(name)) {
-                Toast.makeText(this, "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            PriceTable pt = new PriceTable(0, code, name, desc);
-            viewModel.addPriceTable(pt);
-            Toast.makeText(this, "Đã thêm bảng giá thành công!", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.setNegativeButton("Hủy", null);
-        builder.show();
-    }
-
-    private void showEditPriceTableDialog(PriceTable pt) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sửa bảng giá");
-
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = (int) (18 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding, padding, padding);
-
-        final EditText editCode = new EditText(this);
-        editCode.setHint("Mã bảng giá (ví dụ: BG_STANDARD)");
-        editCode.setText(pt.getMaBanggia());
-        editCode.setSingleLine(true);
-        layout.addView(editCode);
-
-        final EditText editName = new EditText(this);
-        editName.setHint("Tên bảng giá (ví dụ: Bảng giá chuẩn)");
-        editName.setText(pt.getTenbanggia());
-        editName.setSingleLine(true);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.topMargin = (int) (12 * getResources().getDisplayMetrics().density);
-        editName.setLayoutParams(params);
-        layout.addView(editName);
-
-        final EditText editDesc = new EditText(this);
-        editDesc.setHint("Mô tả (ví dụ: Áp dụng từ Thứ 2 đến Thứ 6)");
-        editDesc.setText(pt.getMota());
-        editDesc.setSingleLine(false);
-        editDesc.setLines(2);
-        editDesc.setLayoutParams(params);
-        layout.addView(editDesc);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Lưu", (dialog, which) -> {
-            String code = editCode.getText().toString().trim();
-            String name = editName.getText().toString().trim();
-            String desc = editDesc.getText().toString().trim();
-
-            if (TextUtils.isEmpty(code)) {
-                Toast.makeText(this, "Vui lòng nhập mã bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (TextUtils.isEmpty(name)) {
-                Toast.makeText(this, "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            PriceTable updated = new PriceTable(pt.getId(), code, name, desc);
-            viewModel.updatePriceTable(updated);
-            Toast.makeText(this, "Cập nhật bảng giá thành công!", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.setNegativeButton("Hủy", null);
-        builder.show();
-    }
 
     private void showDeletePriceTableDialog(PriceTable pt) {
         new AlertDialog.Builder(this)

@@ -26,6 +26,10 @@ public class Banggia {
     @Column(length = 255)
     private String mota;
 
+    @OneToMany(mappedBy = "banggia", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
+    private java.util.List<Banggiachitiet> details;
+
     @Column(name = "create_at", insertable = false, updatable = false)
     private LocalDateTime createAt;
 

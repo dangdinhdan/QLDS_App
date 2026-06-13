@@ -90,7 +90,9 @@ public class PriceTableDetailActivity extends AppCompatActivity {
         if (buttonEdit != null) {
             buttonEdit.setOnClickListener(v -> {
                 if (currentPriceTable != null) {
-                    showEditPriceTableDialog(currentPriceTable);
+                    android.content.Intent intent = new android.content.Intent(PriceTableDetailActivity.this, CreatePriceTableActivity.class);
+                    intent.putExtra("price_table_id", currentPriceTable.getId());
+                    startActivity(intent);
                 }
             });
         }
@@ -148,68 +150,59 @@ public class PriceTableDetailActivity extends AppCompatActivity {
         textInfoCode.setText(pt.getMaBanggia());
         textInfoDesc.setText(pt.getMota() != null && !pt.getMota().isEmpty() ? pt.getMota() : "Chưa có mô tả chi tiết.");
 
-        // Custom config statistics based on ID (mirroring design reference in code.html)
-        int slotsCount;
-        String daysApplied;
-        if (pt.getId() == 1) {
-            slotsCount = 4;
-            daysApplied = "T2 - T6";
-        } else if (pt.getId() == 2) {
-            slotsCount = 2;
-            daysApplied = "T7 - CN";
-        } else if (pt.getId() == 3) {
-            slotsCount = 1;
-            daysApplied = "Lễ/Tết";
+        // Dynamic statistics based on slots
+        int slotsCount = pt.getDetails().size();
+        String daysApplied = "Tất cả";
+        if (slotsCount == 0) {
+            daysApplied = "Chưa có";
         } else {
-            slotsCount = 3;
-            daysApplied = "Tất cả";
+            boolean hasWeekday = false;
+            boolean hasWeekend = false;
+            for (com.example.mobile.model.PriceSlot slot : pt.getDetails()) {
+                if ("Cuối tuần".equals(slot.getLoaingay())) {
+                    hasWeekend = true;
+                } else {
+                    hasWeekday = true;
+                }
+            }
+            if (hasWeekday && !hasWeekend) {
+                daysApplied = "T2 - T6";
+            } else if (!hasWeekday && hasWeekend) {
+                daysApplied = "T7 - CN";
+            }
         }
 
         textStatSlots.setText(String.valueOf(slotsCount));
         textStatDays.setText(daysApplied);
 
-        buildSlotsTable(pt.getId());
+        buildSlotsTable(pt);
     }
 
-
-
-    private void buildSlotsTable(int id) {
+    private void buildSlotsTable(PriceTable pt) {
         layoutSlotsTable.removeAllViews();
         float density = getResources().getDisplayMetrics().density;
         int rowPadding = (int) (12 * density);
 
-        class SlotRow {
-            final String time;
-            final String days;
-            final String price;
-
-            SlotRow(String time, String days, String price) {
-                this.time = time;
-                this.days = days;
-                this.price = price;
-            }
+        List<com.example.mobile.model.PriceSlot> slots = pt.getDetails();
+        if (slots.isEmpty()) {
+            TextView emptyText = new TextView(this);
+            emptyText.setText("Chưa có khung giờ nào được cấu hình.");
+            emptyText.setTextSize(13);
+            emptyText.setTextColor(Color.parseColor("#778899"));
+            emptyText.setPadding(rowPadding, rowPadding, rowPadding, rowPadding);
+            layoutSlotsTable.addView(emptyText);
+            return;
         }
 
-        List<SlotRow> rows = new ArrayList<>();
-        if (id == 1) {
-            rows.add(new SlotRow("05:00 - 08:00", "Ngày thường (T2-T6)", "120.000đ"));
-            rows.add(new SlotRow("08:00 - 15:00", "Ngày thường (T2-T6)", "150.000đ"));
-            rows.add(new SlotRow("15:00 - 21:00", "Ngày thường (T2-T6)", "250.000đ"));
-            rows.add(new SlotRow("21:00 - 00:00", "Ngày thường (T2-T6)", "180.000đ"));
-        } else if (id == 2) {
-            rows.add(new SlotRow("05:00 - 16:00", "Cuối tuần (T7-CN)", "180.000đ"));
-            rows.add(new SlotRow("16:00 - 00:00", "Cuối tuần (T7-CN)", "240.000đ"));
-        } else {
-            rows.add(new SlotRow("Cả ngày", "Tất cả", "200.000đ"));
-        }
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
 
-        for (SlotRow row : rows) {
+        for (com.example.mobile.model.PriceSlot slot : slots) {
             LinearLayout linearLayout = new LinearLayout(this);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
             linearLayout.setPadding(rowPadding, rowPadding, rowPadding, rowPadding);
 
             TextView tvTime = new TextView(this);
-            tvTime.setText(row.time);
+            tvTime.setText(slot.getGiobatdau() + " - " + slot.getGiokethuc());
             tvTime.setTextSize(14);
             tvTime.setTypeface(null, Typeface.BOLD);
             tvTime.setTextColor(getResources().getColor(R.color.on_background));
@@ -217,14 +210,14 @@ public class PriceTableDetailActivity extends AppCompatActivity {
             tvTime.setLayoutParams(p1);
 
             TextView tvDays = new TextView(this);
-            tvDays.setText(row.days);
+            tvDays.setText(slot.getLoaingay());
             tvDays.setTextSize(13);
             tvDays.setTextColor(Color.parseColor("#556679"));
             LinearLayout.LayoutParams p2 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
             tvDays.setLayoutParams(p2);
 
             TextView tvPrice = new TextView(this);
-            tvPrice.setText(row.price);
+            tvPrice.setText(formatter.format(slot.getDongia()) + "đ");
             tvPrice.setTextSize(14);
             tvPrice.setTypeface(null, Typeface.BOLD);
             tvPrice.setTextColor(getResources().getColor(R.color.primary));
@@ -303,63 +296,7 @@ public class PriceTableDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void showEditPriceTableDialog(PriceTable pt) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sửa bảng giá");
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = (int) (18 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding, padding, padding);
-
-        final EditText editCode = new EditText(this);
-        editCode.setHint("Mã bảng giá (ví dụ: BG_STANDARD)");
-        editCode.setText(pt.getMaBanggia());
-        editCode.setSingleLine(true);
-        layout.addView(editCode);
-
-        final EditText editName = new EditText(this);
-        editName.setHint("Tên bảng giá (ví dụ: Bảng giá chuẩn)");
-        editName.setText(pt.getTenbanggia());
-        editName.setSingleLine(true);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.topMargin = (int) (12 * getResources().getDisplayMetrics().density);
-        editName.setLayoutParams(params);
-        layout.addView(editName);
-
-        final EditText editDesc = new EditText(this);
-        editDesc.setHint("Mô tả (ví dụ: Áp dụng từ Thứ 2 đến Thứ 6)");
-        editDesc.setText(pt.getMota());
-        editDesc.setSingleLine(false);
-        editDesc.setLines(2);
-        editDesc.setLayoutParams(params);
-        layout.addView(editDesc);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Lưu", (dialog, which) -> {
-            String code = editCode.getText().toString().trim();
-            String name = editName.getText().toString().trim();
-            String desc = editDesc.getText().toString().trim();
-
-            if (TextUtils.isEmpty(code)) {
-                Toast.makeText(this, "Vui lòng nhập mã bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (TextUtils.isEmpty(name)) {
-                Toast.makeText(this, "Vui lòng nhập tên bảng giá", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            PriceTable updated = new PriceTable(pt.getId(), code, name, desc);
-            viewModel.updatePriceTable(updated);
-            Toast.makeText(this, "Cập nhật bảng giá thành công!", Toast.LENGTH_SHORT).show();
-        });
-
-        builder.setNegativeButton("Hủy", null);
-        builder.show();
-    }
 
     private void showDeletePriceTableDialog(PriceTable pt) {
         new AlertDialog.Builder(this)

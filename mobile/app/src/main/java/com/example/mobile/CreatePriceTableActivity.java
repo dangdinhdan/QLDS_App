@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.mobile.model.PriceSlot;
 import com.example.mobile.model.PriceTable;
 import com.example.mobile.viewmodel.MainViewModel;
 import com.google.android.material.button.MaterialButton;
@@ -32,6 +33,10 @@ public class CreatePriceTableActivity extends AppCompatActivity {
     private EditText editDesc;
     private LinearLayout layoutSlotsContainer;
 
+    private boolean isEditMode = false;
+    private int editPriceTableId = -1;
+    private boolean isDataLoaded = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,9 +47,15 @@ public class CreatePriceTableActivity extends AppCompatActivity {
         initViews();
         setupActions();
 
-        // Add reference mockup default pricing rows
-        addSlotRow("Ngày thường", "06:00", "17:00", "150000");
-        addSlotRow("Cuối tuần", "06:00", "22:00", "250000");
+        // Check if we are in Edit Mode
+        int priceTableId = getIntent().getIntExtra("price_table_id", -1);
+        if (priceTableId != -1) {
+            setupEditMode(priceTableId);
+        } else {
+            // Add default pricing rows for new creation
+            addSlotRow("Ngày thường", "06:00", "17:00", "150000");
+            addSlotRow("Cuối tuần", "06:00", "22:00", "250000");
+        }
     }
 
     private void initViews() {
@@ -78,6 +89,52 @@ public class CreatePriceTableActivity extends AppCompatActivity {
         if (buttonSave != null) {
             buttonSave.setOnClickListener(v -> savePriceTable());
         }
+    }
+
+    private void setupEditMode(int id) {
+        isEditMode = true;
+        editPriceTableId = id;
+
+        // Change header title
+        TextView textTitle = findViewById(R.id.text_screen_title);
+        if (textTitle != null) {
+            textTitle.setText("Chỉnh sửa bảng giá");
+        }
+
+        // Change save button text
+        MaterialButton buttonSave = findViewById(R.id.button_save);
+        if (buttonSave != null) {
+            buttonSave.setText("Lưu thay đổi");
+        }
+
+        // Fetch price table data and pre-fill fields
+        viewModel.getPriceTables().observe(this, priceTables -> {
+            if (isDataLoaded) return;
+            if (priceTables != null) {
+                for (PriceTable pt : priceTables) {
+                    if (pt.getId() == id) {
+                        editCode.setText(pt.getMaBanggia());
+                        editName.setText(pt.getTenbanggia());
+                        editDesc.setText(pt.getMota());
+
+                        // Populate slots dynamically from db
+                        layoutSlotsContainer.removeAllViews();
+                        List<PriceSlot> details = pt.getDetails();
+                        if (details != null && !details.isEmpty()) {
+                            for (PriceSlot slot : details) {
+                                int p = (int) slot.getDongia();
+                                addSlotRow(slot.getLoaingay(), slot.getGiobatdau(), slot.getGiokethuc(), String.valueOf(p));
+                            }
+                        } else {
+                            addSlotRow("Ngày thường", "06:00", "17:00", "150000");
+                            addSlotRow("Cuối tuần", "06:00", "22:00", "250000");
+                        }
+                        isDataLoaded = true;
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     private void addSlotRow(String dayType, String startTime, String endTime, String price) {
@@ -152,12 +209,39 @@ public class CreatePriceTableActivity extends AppCompatActivity {
             return;
         }
 
-        // Build object and call viewmodel
-        PriceTable pt = new PriceTable(0, code, name, desc);
-        viewModel.addPriceTable(pt);
+        // Parse slots from layout rows
+        List<PriceSlot> slots = new ArrayList<>();
+        int childCount = layoutSlotsContainer.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View row = layoutSlotsContainer.getChildAt(i);
+            Spinner spinner = row.findViewById(R.id.spinner_day_type);
+            TextView textStart = row.findViewById(R.id.text_start_time);
+            TextView textEnd = row.findViewById(R.id.text_end_time);
+            EditText editPrice = row.findViewById(R.id.edit_slot_price);
 
-        // Feedback / Simulation of slots storage
-        Toast.makeText(this, "Thêm bảng giá và chi tiết khung giờ thành công!", Toast.LENGTH_SHORT).show();
+            String dayType = spinner.getSelectedItem() != null ? spinner.getSelectedItem().toString() : "Ngày thường";
+            String start = textStart.getText().toString();
+            String end = textEnd.getText().toString();
+            String priceStr = editPrice.getText().toString().trim();
+            double price = 0.0;
+            if (!TextUtils.isEmpty(priceStr)) {
+                try {
+                    price = Double.parseDouble(priceStr);
+                } catch (NumberFormatException ignored) {}
+            }
+
+            slots.add(new PriceSlot(0, dayType, start, end, price));
+        }
+
+        if (isEditMode) {
+            PriceTable pt = new PriceTable(editPriceTableId, code, name, desc, slots);
+            viewModel.updatePriceTable(pt);
+            Toast.makeText(this, "Cập nhật bảng giá thành công!", Toast.LENGTH_SHORT).show();
+        } else {
+            PriceTable pt = new PriceTable(0, code, name, desc, slots);
+            viewModel.addPriceTable(pt);
+            Toast.makeText(this, "Thêm bảng giá và chi tiết khung giờ thành công!", Toast.LENGTH_SHORT).show();
+        }
         finish();
     }
 }
