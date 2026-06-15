@@ -19,7 +19,7 @@ public class SanController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<San>>> getAllSan() {
         try {
-            List<San> listSan = sanRepository.findByIsdeleteFalse();
+            List<San> listSan = sanRepository.findByIsdeleteFalseOrIsdeleteIsNull();
             return ResponseEntity.ok(ApiResponse.<List<San>>builder()
                     .success(true)
                     .message("Lấy danh sách sân thành công!")

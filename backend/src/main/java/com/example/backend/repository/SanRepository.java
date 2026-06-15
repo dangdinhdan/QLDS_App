@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface SanRepository extends JpaRepository<San, Integer> {
     Optional<San> findByMaSan(String maSan);
-    List<San> findByIsdeleteFalse();
+    List<San> findByIsdeleteFalseOrIsdeleteIsNull();
 }
 
