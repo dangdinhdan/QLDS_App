@@ -31,6 +31,7 @@ import com.example.mobile.model.PriceTable;
 import com.example.mobile.view.PriceTableAdapter;
 import com.example.mobile.viewmodel.MainViewModel;
 import android.view.ViewGroup;
+import android.util.Log;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.button.MaterialButton;
@@ -87,6 +88,20 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private EditText editSearchPriceTables;
     private String ptSearchQuery = "";
 
+    // New Booking Timeline Views & Filter States
+    private com.google.android.material.card.MaterialCardView cardFilterDate;
+    private com.google.android.material.card.MaterialCardView cardFilterDuration;
+    private TextView textFilterDate;
+    private TextView textFilterDuration;
+    private LinearLayout layoutTimelineTimeHeaders;
+    private LinearLayout layoutTimelineCourtsColumn;
+    private LinearLayout layoutTimelineRowsContainer;
+    private com.google.android.material.button.MaterialButton buttonRefreshBookings;
+    private com.google.android.material.button.MaterialButton buttonAddBookingNew;
+    
+    private String selectedBookingDate = "2026-06-11"; // Default date matching mock data seed
+    private String selectedBookingDuration = "60 phút"; // Default duration
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
         // Recyclers
         recyclerCourts = findViewById(R.id.recycler_courts);
-        recyclerBookings = findViewById(R.id.recycler_bookings);
         recyclerPriceTables = findViewById(R.id.recycler_price_tables);
 
         // Stats elements
@@ -147,6 +161,25 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         chipFilterInUse = findViewById(R.id.chip_filter_in_use);
         chipFilterBooked = findViewById(R.id.chip_filter_booked);
         chipFilterMaintenance = findViewById(R.id.chip_filter_maintenance);
+
+        // New Booking Timeline Views
+        cardFilterDate = findViewById(R.id.card_filter_date);
+        cardFilterDuration = findViewById(R.id.card_filter_duration);
+        textFilterDate = findViewById(R.id.text_filter_date);
+        textFilterDuration = findViewById(R.id.text_filter_duration);
+        layoutTimelineTimeHeaders = findViewById(R.id.layout_timeline_time_headers);
+        layoutTimelineCourtsColumn = findViewById(R.id.layout_timeline_courts_column);
+        layoutTimelineRowsContainer = findViewById(R.id.layout_timeline_rows_container);
+        buttonRefreshBookings = findViewById(R.id.button_refresh_bookings);
+        buttonAddBookingNew = findViewById(R.id.button_add_booking_new);
+
+        // Prepopulate filter text
+        if (textFilterDate != null) {
+            textFilterDate.setText(formatDbDateToDisplay(selectedBookingDate));
+        }
+        if (textFilterDuration != null) {
+            textFilterDuration.setText(selectedBookingDuration);
+        }
     }
 
     private void setupNavigation() {
@@ -158,6 +191,9 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 return true;
             } else if (itemId == R.id.navigation_courts) {
                 showTab(layoutCourtsTab);
+                return true;
+            } else if (itemId == R.id.navigation_bookings) {
+                showTab(layoutBookingsTab);
                 return true;
             } else if (itemId == R.id.navigation_pricing) {
                 showTab(layoutPricingTab);
@@ -190,11 +226,6 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         recyclerCourts.setLayoutManager(new LinearLayoutManager(this));
         courtAdapter = new CourtAdapter(this);
         recyclerCourts.setAdapter(courtAdapter);
-
-        // Bookings list config
-        recyclerBookings.setLayoutManager(new LinearLayoutManager(this));
-        bookingAdapter = new BookingAdapter(this);
-        recyclerBookings.setAdapter(bookingAdapter);
 
         // Pricing list config
         recyclerPriceTables.setLayoutManager(new LinearLayoutManager(this));
@@ -265,26 +296,23 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         }
 
         // Setup new layout bookings tab actions
-        View addBookingTop = findViewById(R.id.button_add_booking_top);
-        if (addBookingTop != null) {
-            addBookingTop.setOnClickListener(v -> showAddBookingDialog(null));
+        if (cardFilterDate != null) {
+            cardFilterDate.setOnClickListener(v -> showDatePickerDialog());
+        }
+        if (cardFilterDuration != null) {
+            cardFilterDuration.setOnClickListener(v -> showDurationPopupMenu());
+        }
+        if (buttonRefreshBookings != null) {
+            buttonRefreshBookings.setOnClickListener(v -> {
+                viewModel.refreshData();
+                Toast.makeText(MainActivity.this, "Đã cập nhật dữ liệu đặt sân mới nhất!", Toast.LENGTH_SHORT).show();
+            });
+        }
+        if (buttonAddBookingNew != null) {
+            buttonAddBookingNew.setOnClickListener(v -> showAddBookingDialog(null));
         }
 
-        View btnRequests = findViewById(R.id.button_view_requests);
-        if (btnRequests != null) {
-            btnRequests.setOnClickListener(v -> 
-                Toast.makeText(MainActivity.this, "Đang mở danh sách yêu cầu chờ duyệt...", Toast.LENGTH_SHORT).show()
-            );
-        }
 
-        View btnReports = findViewById(R.id.button_view_reports);
-        if (btnReports != null) {
-            btnReports.setOnClickListener(v -> 
-                Toast.makeText(MainActivity.this, "Đang xuất báo cáo thống kê đặt sân...", Toast.LENGTH_SHORT).show()
-            );
-        }
-
-        setupCalendarStrip();
 
         // Search listener
         editSearchCourts.addTextChangedListener(new android.text.TextWatcher() {
@@ -336,48 +364,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     }
 
     private void setupCalendarStrip() {
-        com.google.android.material.card.MaterialCardView day23 = findViewById(R.id.calendar_day_23);
-        com.google.android.material.card.MaterialCardView day24 = findViewById(R.id.calendar_day_24);
-        com.google.android.material.card.MaterialCardView day25 = findViewById(R.id.calendar_day_25);
-        com.google.android.material.card.MaterialCardView day26 = findViewById(R.id.calendar_day_26);
-        com.google.android.material.card.MaterialCardView day27 = findViewById(R.id.calendar_day_27);
-
-        com.google.android.material.card.MaterialCardView[] days = {day23, day24, day25, day26, day27};
-        int[] dayNums = {23, 24, 25, 26, 27};
-        
-        for (int i = 0; i < days.length; i++) {
-            final int index = i;
-            if (days[i] != null) {
-                days[i].setOnClickListener(v -> {
-                    // Update visual selection
-                    for (int j = 0; j < days.length; j++) {
-                        if (days[j] != null) {
-                            if (j == index) {
-                                days[j].setCardBackgroundColor(getResources().getColor(R.color.primary_container));
-                                days[j].setStrokeWidth((int) (1.5 * getResources().getDisplayMetrics().density));
-                                days[j].setStrokeColor(getResources().getColor(R.color.primary));
-                            } else {
-                                days[j].setCardBackgroundColor(getResources().getColor(R.color.white));
-                                days[j].setStrokeWidth((int) (1 * getResources().getDisplayMetrics().density));
-                                days[j].setStrokeColor(getResources().getColor(R.color.border_gray));
-                            }
-                        }
-                    }
-                    
-                    // Filter bookings or show Toast
-                    if (dayNums[index] == 24) {
-                        bookingAdapter.setData(cachedBookings, cachedCourts);
-                        TextView badge = findViewById(R.id.badge_booking_count);
-                        if (badge != null) badge.setText(cachedBookings.size() + " lượt đặt");
-                    } else {
-                        bookingAdapter.setData(new ArrayList<>(), cachedCourts);
-                        TextView badge = findViewById(R.id.badge_booking_count);
-                        if (badge != null) badge.setText("0 lượt đặt");
-                    }
-                    Toast.makeText(MainActivity.this, "Đang xem lịch ngày " + dayNums[index] + "/05", Toast.LENGTH_SHORT).show();
-                });
-            }
-        }
+        // Obsolete calendar strip - replaced by Date Selector dropdown filter.
     }
 
     private void observeViewModel() {
@@ -386,6 +373,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             if (courts != null) {
                 cachedCourts = courts;
                 updateCourtsUI(courts);
+                rebuildTimelineGrid();
             }
         });
 
@@ -394,6 +382,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             if (bookings != null) {
                 cachedBookings = bookings;
                 updateBookingsUI(bookings);
+                rebuildTimelineGrid();
             }
         });
 
@@ -496,16 +485,12 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
     private void updateBookingsUI(List<Booking> bookings) {
         // Update main bookings tab recycler
-        bookingAdapter.setData(bookings, cachedCourts);
+        if (bookingAdapter != null) {
+            bookingAdapter.setData(bookings, cachedCourts);
+        }
 
         // Update dashboard metrics count
         textBookingsCount.setText(String.valueOf(bookings.size()));
-
-        // Update badge booking count on bookings tab
-        TextView badgeBookingCount = findViewById(R.id.badge_booking_count);
-        if (badgeBookingCount != null) {
-            badgeBookingCount.setText(bookings.size() + " lượt đặt");
-        }
 
         // Update Recent Activities list on home tab (limit to latest 5 bookings)
         layoutRecentActivities.removeAllViews();
@@ -734,7 +719,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             double fee = duration * court.getHourlyRate();
 
             // Create Booking
-            Booking booking = new Booking(0, court.getId(), playerName, "2026-06-11", startTime, endTime, fee);
+            Booking booking = new Booking(0, court.getId(), playerName, selectedBookingDate, startTime, endTime, fee);
             viewModel.addBooking(booking);
 
             Toast.makeText(MainActivity.this, "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
@@ -953,5 +938,321 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    // ================= Booking Grid Schedule Helper Methods =================
+
+    private void showDatePickerDialog() {
+        try {
+            String[] parts = selectedBookingDate.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]) - 1;
+            int day = Integer.parseInt(parts[2]);
+
+            android.app.DatePickerDialog datePickerDialog = new android.app.DatePickerDialog(this,
+                    (view, selectedYear, selectedMonth, selectedDay) -> {
+                        selectedBookingDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay);
+                        if (textFilterDate != null) {
+                            textFilterDate.setText(formatDbDateToDisplay(selectedBookingDate));
+                        }
+                        rebuildTimelineGrid();
+                        Toast.makeText(MainActivity.this, "Xem lịch ngày: " + formatDbDateToDisplay(selectedBookingDate), Toast.LENGTH_SHORT).show();
+                    }, year, month, day);
+            datePickerDialog.show();
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error opening date picker", e);
+        }
+    }
+
+    private int getSelectedDurationMinutes() {
+        if (selectedBookingDuration == null) return 60;
+        if (selectedBookingDuration.contains("15")) return 15;
+        if (selectedBookingDuration.contains("30")) return 30;
+        return 60;
+    }
+
+    private void showDurationPopupMenu() {
+        PopupMenu popup = new PopupMenu(this, cardFilterDuration);
+        popup.getMenu().add("15 phút");
+        popup.getMenu().add("30 phút");
+        popup.getMenu().add("60 phút");
+        popup.setOnMenuItemClickListener(item -> {
+            selectedBookingDuration = item.getTitle().toString();
+            if (textFilterDuration != null) {
+                textFilterDuration.setText(selectedBookingDuration);
+            }
+            rebuildTimelineGrid();
+            return true;
+        });
+        popup.show();
+    }
+
+    private void rebuildTimelineGrid() {
+        if (layoutTimelineCourtsColumn == null || layoutTimelineRowsContainer == null) return;
+
+        // Clear layouts
+        layoutTimelineCourtsColumn.removeAllViews();
+        layoutTimelineRowsContainer.removeAllViews();
+        if (layoutTimelineTimeHeaders != null) {
+            layoutTimelineTimeHeaders.removeAllViews();
+        }
+
+        // Add top-left spacer to courts column
+        View spacer = new View(this);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(40)
+        ));
+        spacer.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+        layoutTimelineCourtsColumn.addView(spacer);
+
+        int intervalMinutes = getSelectedDurationMinutes();
+        int numCols = 960 / intervalMinutes; // 16 hours * 60 minutes = 960 minutes
+
+        // Rebuild time headers dynamically
+        if (layoutTimelineTimeHeaders != null) {
+            ViewGroup.LayoutParams headersParams = layoutTimelineTimeHeaders.getLayoutParams();
+            if (headersParams != null) {
+                headersParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutTimelineTimeHeaders.setLayoutParams(headersParams);
+            }
+
+            for (int i = 0; i < numCols; i++) {
+                int minutesFromStart = i * intervalMinutes;
+                int totalMinutes = 6 * 60 + minutesFromStart;
+                int hour = totalMinutes / 60;
+                int minute = totalMinutes % 60;
+                String timeStr = String.format("%02d:%02d", hour, minute);
+
+                TextView textHeader = new TextView(this);
+                LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
+                        dpToPx(100),
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                textHeader.setLayoutParams(headerParams);
+                textHeader.setText(timeStr);
+                textHeader.setTextSize(12);
+                textHeader.setTextColor(android.graphics.Color.parseColor("#556679"));
+                textHeader.setGravity(android.view.Gravity.CENTER);
+                textHeader.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+                layoutTimelineTimeHeaders.addView(textHeader);
+            }
+        }
+
+        if (layoutTimelineRowsContainer != null) {
+            ViewGroup.LayoutParams rowsParams = layoutTimelineRowsContainer.getLayoutParams();
+            if (rowsParams != null) {
+                rowsParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                layoutTimelineRowsContainer.setLayoutParams(rowsParams);
+            }
+        }
+
+        if (cachedCourts == null || cachedCourts.isEmpty()) {
+            return;
+        }
+
+        // Iterate courts to build sticky column & timelines
+        for (Court court : cachedCourts) {
+            // Sticky Court Name
+            TextView textCourtName = new TextView(this);
+            LinearLayout.LayoutParams courtParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    dpToPx(60)
+            );
+            textCourtName.setLayoutParams(courtParams);
+            textCourtName.setText(court.getName());
+            textCourtName.setGravity(android.view.Gravity.CENTER);
+            textCourtName.setTextSize(13);
+            textCourtName.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+            textCourtName.setTextColor(getResources().getColor(R.color.primary));
+            textCourtName.setBackgroundColor(getResources().getColor(R.color.surface_header));
+            layoutTimelineCourtsColumn.addView(textCourtName);
+
+            // Add border below court name
+            View borderLeft = new View(this);
+            borderLeft.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(1)));
+            borderLeft.setBackgroundColor(getResources().getColor(R.color.border_gray));
+            layoutTimelineCourtsColumn.addView(borderLeft);
+
+            // Row Container
+            android.widget.FrameLayout rowFrame = new android.widget.FrameLayout(this);
+            LinearLayout.LayoutParams frameParams = new LinearLayout.LayoutParams(
+                    dpToPx(numCols * 100),
+                    dpToPx(60)
+            );
+            rowFrame.setLayoutParams(frameParams);
+            rowFrame.setBackgroundColor(getResources().getColor(R.color.white));
+
+            // Background cells and gridlines
+            LinearLayout bgLayout = new LinearLayout(this);
+            bgLayout.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            ));
+            bgLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+            for (int i = 0; i < numCols; i++) {
+                View cellView = new View(this);
+                LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(
+                        dpToPx(99),
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                cellView.setLayoutParams(cellParams);
+                bgLayout.addView(cellView);
+
+                View lineView = new View(this);
+                LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                        dpToPx(1),
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                lineView.setLayoutParams(lineParams);
+                lineView.setBackgroundColor(getResources().getColor(R.color.border_gray));
+                bgLayout.addView(lineView);
+            }
+            rowFrame.addView(bgLayout);
+
+            // Filter bookings
+            List<Booking> courtBookings = new ArrayList<>();
+            if (cachedBookings != null) {
+                for (Booking b : cachedBookings) {
+                    if (b.getCourtId() == court.getId() && selectedBookingDate.equals(b.getDate())) {
+                        courtBookings.add(b);
+                    }
+                }
+            }
+
+            // Draw bookings
+            for (Booking booking : courtBookings) {
+                double startHour = timeToHours(booking.getStartTime());
+                double endHour = timeToHours(booking.getEndTime());
+
+                if (startHour < 6.0) startHour = 6.0;
+                if (endHour > 22.0) endHour = 22.0;
+                if (startHour >= endHour) continue;
+
+                double offset = startHour - 6.0;
+                double duration = endHour - startHour;
+
+                double pxPerHour = 60.0 * (100.0 / intervalMinutes);
+                int cardLeft = dpToPx((int) Math.round(offset * pxPerHour));
+                int cardWidth = dpToPx((int) Math.round(duration * pxPerHour)) - dpToPx(4);
+
+                com.google.android.material.card.MaterialCardView cardView = new com.google.android.material.card.MaterialCardView(this);
+                android.widget.FrameLayout.LayoutParams cardParams = new android.widget.FrameLayout.LayoutParams(
+                        cardWidth,
+                        dpToPx(50)
+                );
+                cardParams.leftMargin = cardLeft + dpToPx(2);
+                cardParams.gravity = android.view.Gravity.CENTER_VERTICAL;
+                cardView.setLayoutParams(cardParams);
+                cardView.setCardElevation(0);
+                cardView.setRadius((float) dpToPx(4));
+                
+                int bgColorRes = R.color.secondary;
+                int textColorRes = R.color.white;
+                if (booking.getStatus() != null) {
+                    if (booking.getStatus().equalsIgnoreCase("Đang sử dụng")) {
+                        bgColorRes = R.color.primary_container;
+                        textColorRes = R.color.black;
+                    } else if (booking.getStatus().equalsIgnoreCase("Hoàn thành")) {
+                        bgColorRes = R.color.status_empty;
+                        textColorRes = R.color.white;
+                    } else if (booking.getStatus().equalsIgnoreCase("Đã hủy")) {
+                        bgColorRes = R.color.status_maintenance;
+                        textColorRes = R.color.white;
+                    }
+                }
+                cardView.setCardBackgroundColor(getResources().getColor(bgColorRes));
+                cardView.setStrokeWidth(0);
+
+                TextView textInfo = new TextView(this);
+                android.widget.FrameLayout.LayoutParams textParams = new android.widget.FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                textInfo.setLayoutParams(textParams);
+                textInfo.setText(booking.getPlayerName() + "\n" + booking.getStartTime() + " - " + booking.getEndTime());
+                textInfo.setGravity(android.view.Gravity.CENTER);
+                textInfo.setTextSize(10);
+                textInfo.setTextColor(getResources().getColor(textColorRes));
+                textInfo.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+                textInfo.setPadding(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4));
+                cardView.addView(textInfo);
+
+                cardView.setOnClickListener(v -> showBookingActionDialog(booking));
+
+                rowFrame.addView(cardView);
+            }
+
+            layoutTimelineRowsContainer.addView(rowFrame);
+
+            View borderRow = new View(this);
+            borderRow.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(1)));
+            borderRow.setBackgroundColor(getResources().getColor(R.color.border_gray));
+            layoutTimelineRowsContainer.addView(borderRow);
+        }
+    }
+
+    private void showBookingActionDialog(Booking booking) {
+        String courtName = "Court #" + booking.getCourtId();
+        if (cachedCourts != null) {
+            for (Court c : cachedCourts) {
+                if (c.getId() == booking.getCourtId()) {
+                    courtName = c.getName();
+                    break;
+                }
+            }
+        }
+        String message = "Khách hàng: " + booking.getPlayerName() + "\n" +
+                "Sân: " + courtName + "\n" +
+                "Thời gian: " + booking.getStartTime() + " - " + booking.getEndTime() + "\n" +
+                "Ngày đặt: " + formatDbDateToDisplay(booking.getDate()) + "\n" +
+                "Trạng thái: " + booking.getStatus() + "\n" +
+                "Chi phí: $" + booking.getFee();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Chi tiết lịch đặt sân")
+                .setMessage(message)
+                .setPositiveButton("Đóng", null)
+                .setNegativeButton("Hủy lịch đặt (Xóa)", (dialog, which) -> {
+                    onCancelBooking(booking);
+                })
+                .show();
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    private double timeToHours(String time) {
+        try {
+            if (time == null || !time.contains(":")) return 6.0;
+            String[] parts = time.split(":");
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+            return hour + minute / 60.0;
+        } catch (Exception e) {
+            return 6.0;
+        }
+    }
+
+    private String formatDbDateToDisplay(String dbDate) {
+        try {
+            if (dbDate == null || !dbDate.contains("-")) return dbDate;
+            String[] parts = dbDate.split("-");
+            return parts[2] + "/" + parts[1] + "/" + parts[0];
+        } catch (Exception e) {
+            return dbDate;
+        }
+    }
+
+    private String formatDisplayDateToDb(String displayDate) {
+        try {
+            if (displayDate == null || !displayDate.contains("/")) return displayDate;
+            String[] parts = displayDate.split("/");
+            return parts[2] + "-" + parts[1] + "-" + parts[0];
+        } catch (Exception e) {
+            return displayDate;
+        }
     }
 }
