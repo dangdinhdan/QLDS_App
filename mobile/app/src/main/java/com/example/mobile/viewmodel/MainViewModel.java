@@ -70,6 +70,7 @@ public class MainViewModel extends ViewModel {
         refreshDataLocalOnly();
         repository.refreshCourtsFromBackend(this::refreshDataLocalOnly);
         repository.refreshPriceTablesFromBackend(this::refreshDataLocalOnly);
+        repository.refreshBookingsFromBackend(this::refreshDataLocalOnly);
     }
 
     public void addBooking(Booking booking) {

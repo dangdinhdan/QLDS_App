@@ -1,6 +1,7 @@
 package com.example.mobile.repository;
 
 import android.util.Log;
+import com.example.mobile.config.ApiConfig;
 import com.example.mobile.model.Booking;
 import com.example.mobile.model.Court;
 import com.example.mobile.model.CourtStatus;
@@ -20,7 +21,8 @@ import java.util.concurrent.Executors;
 
 public class CourtRepository {
     private static CourtRepository instance;
-    private static final String API_URL = "http://10.0.2.2:8080/api/san";
+    private static final String API_URL = ApiConfig.getApiUrl("/api/san");
+    private static final String BOOKINGS_API_URL = ApiConfig.getApiUrl("/api/bookings");
     private final ExecutorService executorService;
     private final List<Court> courts;
     private final List<Booking> bookings;
@@ -45,17 +47,17 @@ public class CourtRepository {
 
     private void initMockData() {
         // Pre-populate 5 courts matching code.html
-        courts.add(new Court(1, "Sân A1", CourtStatus.EMPTY, 15.0, "Cứng", "https://lh3.googleusercontent.com/aida-public/AB6AXuCpEMfgR-e3j0Hdx7AtEIcosPQyuCy7fmLQh-zfa8GxY6FnktWphi8fum0F15eVySWBKWs0l-ektHgmLHr6QHXeFI7E3gT4771TKqamANJfmGvNI2iJSdS5sgyHW1xDe5OCkFoy6lE4OAL8qkF-TabGD-kBwRloqHn9kvnpDL-NIn2ici4VtoYojJsHlvyQqbxKuy9WV4eWjN5vqzdA3tLqH7RQf4M9GVz4cAtEGggsPw5SfmblpK80e7TQV7M5AGx3O1VUfHtZWe1B", null));
-        courts.add(new Court(2, "Sân A2", CourtStatus.IN_USE, 20.0, "Thảm", "https://lh3.googleusercontent.com/aida-public/AB6AXuCgrmfaKmP2JJRpl0m6xtud8DkYijdJhC_u7bz1kZJvYB-iCwaGRsoWOmT2tiXJtE5wHbAVW5y1Cmj_v8Nb9fx4Ay03UwW6SoxxoTh15kEb2szmUtsW-YKrq8r-K2ntObpycv19V892cVkkEXRK5-WaRyEC2qMwt40EGit165y7LffiIb1uigCJIpvTfAVR87Nb32xqyUYFa_yfMPWenl7Mew767ZDkPUM3-4tRg8eBLrk0KF_NkKYRlEavBbeRHiLCFASacnqwovYO", null));
-        courts.add(new Court(3, "Sân B1", CourtStatus.BOOKED, 18.0, "Cứng", "https://lh3.googleusercontent.com/aida-public/AB6AXuBFGJlwmqur9Qa9WLmIKgC3U5unB3wGl5wySmSBNLkADTQpwaXi-sfS0CphrVisXrTQXn57ofKFpZlSMevpmGEs3twZdF5nTVACRIFSEHtq7Ua-JE5Y86xVu_R1Y4STxhul9F-shdjCefPSv-kqIb04lXT681JoSsFFFCd6yPGaVWGIn4D5AIlNOnk96-Het4aC5fZvEzZyMqGb3eDFN83ct2YM3e4Ing13NlihkgnVsxIgs1yGm7Mx3v2q0s_Bo2wnG4JJwm-ZXiA4", null));
-        courts.add(new Court(4, "Sân C1", CourtStatus.MAINTENANCE, 15.0, "Cứng", "", "20/10"));
-        courts.add(new Court(5, "Sân B2", CourtStatus.EMPTY, 15.0, "Thảm", "https://lh3.googleusercontent.com/aida-public/AB6AXuDIiHgvnl3jhQzzGSgh61_S1VOTMOTTSV2Hab3IjOF4Di9XpgutWEacyMT3nx8pp8dOVsnSPI2uyNwB8m-lNgo71XTXkQk5PIiFxWMLnqdR816CjqPxgdCkr1jFvSXzeyEjyTPNr-he0856Dl8L3SykteUz3j7y6D4NcB2XImuTMm9MtheCXjmkoPgUJPIGu-UBvb8Zv2FlV6iJgYA5sUhU-Drxc8UdFKTnTBH__y4E2BbDtxRu6fVn6XqTHQwBQ3tjU0lwUr4gareh", null));
+        courts.add(new Court(1, "Sân A1", CourtStatus.EMPTY, 150000.0, "Cứng", "https://lh3.googleusercontent.com/aida-public/AB6AXuCpEMfgR-e3j0Hdx7AtEIcosPQyuCy7fmLQh-zfa8GxY6FnktWphi8fum0F15eVySWBKWs0l-ektHgmLHr6QHXeFI7E3gT4771TKqamANJfmGvNI2iJSdS5sgyHW1xDe5OCkFoy6lE4OAL8qkF-TabGD-kBwRloqHn9kvnpDL-NIn2ici4VtoYojJsHlvyQqbxKuy9WV4eWjN5vqzdA3tLqH7RQf4M9GVz4cAtEGggsPw5SfmblpK80e7TQV7M5AGx3O1VUfHtZWe1B", null));
+        courts.add(new Court(2, "Sân A2", CourtStatus.IN_USE, 200000.0, "Thảm", "https://lh3.googleusercontent.com/aida-public/AB6AXuCgrmfaKmP2JJRpl0m6xtud8DkYijdJhC_u7bz1kZJvYB-iCwaGRsoWOmT2tiXJtE5wHbAVW5y1Cmj_v8Nb9fx4Ay03UwW6SoxxoTh15kEb2szmUtsW-YKrq8r-K2ntObpycv19V892cVkkEXRK5-WaRyEC2qMwt40EGit165y7LffiIb1uigCJIpvTfAVR87Nb32xqyUYFa_yfMPWenl7Mew767ZDkPUM3-4tRg8eBLrk0KF_NkKYRlEavBbeRHiLCFASacnqwovYO", null));
+        courts.add(new Court(3, "Sân B1", CourtStatus.BOOKED, 180000.0, "Cứng", "https://lh3.googleusercontent.com/aida-public/AB6AXuBFGJlwmqur9Qa9WLmIKgC3U5unB3wGl5wySmSBNLkADTQpwaXi-sfS0CphrVisXrTQXn57ofKFpZlSMevpmGEs3twZdF5nTVACRIFSEHtq7Ua-JE5Y86xVu_R1Y4STxhul9F-shdjCefPSv-kqIb04lXT681JoSsFFFCd6yPGaVWGIn4D5AIlNOnk96-Het4aC5fZvEzZyMqGb3eDFN83ct2YM3e4Ing13NlihkgnVsxIgs1yGm7Mx3v2q0s_Bo2wnG4JJwm-ZXiA4", null));
+        courts.add(new Court(4, "Sân C1", CourtStatus.MAINTENANCE, 150000.0, "Cứng", "", "20/10"));
+        courts.add(new Court(5, "Sân B2", CourtStatus.EMPTY, 150000.0, "Thảm", "https://lh3.googleusercontent.com/aida-public/AB6AXuDIiHgvnl3jhQzzGSgh61_S1VOTMOTTSV2Hab3IjOF4Di9XpgutWEacyMT3nx8pp8dOVsnSPI2uyNwB8m-lNgo71XTXkQk5PIiFxWMLnqdR816CjqPxgdCkr1jFvSXzeyEjyTPNr-he0856Dl8L3SykteUz3j7y6D4NcB2XImuTMm9MtheCXjmkoPgUJPIGu-UBvb8Zv2FlV6iJgYA5sUhU-Drxc8UdFKTnTBH__y4E2BbDtxRu6fVn6XqTHQwBQ3tjU0lwUr4gareh", null));
 
         // Pre-populate bookings matching the visual context
-        bookings.add(new Booking(1, 1, "Nguyễn Văn An", "2026-06-11", "17:00", "19:00", 30.0, "Đang sử dụng"));
-        bookings.add(new Booking(2, 3, "Trần Thị Bích", "2026-06-11", "18:30", "20:00", 27.0, "Đã đặt"));
-        bookings.add(new Booking(3, 2, "Lê Hoàng Nam", "2026-06-11", "15:00", "17:00", 40.0, "Hoàn thành"));
-        bookings.add(new Booking(4, 4, "Phạm Minh Đức", "2026-06-11", "19:00", "21:00", 30.0, "Đã hủy"));
+        bookings.add(new Booking(1, 1, "Nguyễn Văn An", "2026-06-11", "17:00", "19:00", 300000.0, "Đang sử dụng"));
+        bookings.add(new Booking(2, 3, "Trần Thị Bích", "2026-06-11", "18:30", "20:00", 270000.0, "Đã đặt"));
+        bookings.add(new Booking(3, 2, "Lê Hoàng Nam", "2026-06-11", "15:00", "17:00", 400000.0, "Hoàn thành"));
+        bookings.add(new Booking(4, 4, "Phạm Minh Đức", "2026-06-11", "19:00", "21:00", 300000.0, "Đã hủy"));
     }
 
     public List<Court> getAllCourts() {
@@ -72,7 +74,7 @@ public class CourtRepository {
         executorService.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("http://10.0.2.2:8080/api/banggia");
+                URL url = new URL(ApiConfig.getApiUrl("/api/banggia"));
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Accept", "application/json");
@@ -161,7 +163,7 @@ public class CourtRepository {
         executorService.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("http://10.0.2.2:8080/api/banggia");
+                URL url = new URL(ApiConfig.getApiUrl("/api/banggia"));
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -227,7 +229,7 @@ public class CourtRepository {
         executorService.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("http://10.0.2.2:8080/api/banggia/" + pt.getId());
+                URL url = new URL(ApiConfig.getApiUrl("/api/banggia/" + pt.getId()));
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("PUT");
                 conn.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -297,7 +299,7 @@ public class CourtRepository {
         executorService.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("http://10.0.2.2:8080/api/banggia/" + id);
+                URL url = new URL(ApiConfig.getApiUrl("/api/banggia/" + id));
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("DELETE");
                 conn.setRequestProperty("Accept", "application/json");
@@ -357,39 +359,118 @@ public class CourtRepository {
                 booking.getFee(),
                 booking.getStatus()
         );
-        bookings.add(newBooking);
+        newBooking.setPhoneNumber(booking.getPhoneNumber());
+        synchronized (bookings) {
+            bookings.add(newBooking);
+        }
         
         // Auto-update court status based on booking
         Court court = getCourtById(booking.getCourtId());
         if (court != null && court.getStatus() == CourtStatus.EMPTY) {
             court.setStatus(CourtStatus.BOOKED);
         }
+
+        // Send POST request to backend in background
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(BOOKINGS_API_URL);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("courtId", booking.getCourtId());
+                jsonRequest.put("playerName", booking.getPlayerName());
+                jsonRequest.put("phoneNumber", booking.getPhoneNumber() != null ? booking.getPhoneNumber() : "");
+                jsonRequest.put("date", booking.getDate());
+                jsonRequest.put("startTime", booking.getStartTime());
+                jsonRequest.put("endTime", booking.getEndTime());
+                jsonRequest.put("fee", booking.getFee());
+                jsonRequest.put("status", booking.getStatus());
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    Log.d("CourtRepository", "Thêm đặt sân lên backend thành công");
+                } else {
+                    Log.e("CourtRepository", "Lỗi thêm đặt sân lên backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi thêm đặt sân lên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        });
     }
 
     public boolean deleteBooking(int bookingId) {
         Booking target = null;
-        for (Booking b : bookings) {
-            if (b.getId() == bookingId) {
-                target = b;
-                break;
+        synchronized (bookings) {
+            for (Booking b : bookings) {
+                if (b.getId() == bookingId) {
+                    target = b;
+                    break;
+                }
+            }
+            if (target != null) {
+                bookings.remove(target);
             }
         }
+
         if (target != null) {
-            bookings.remove(target);
-            
             // Check if court has any other bookings, if not, update status to EMPTY
             int courtId = target.getCourtId();
             boolean hasOther = false;
-            for (Booking b : bookings) {
-                if (b.getCourtId() == courtId) {
-                    hasOther = true;
-                    break;
+            synchronized (bookings) {
+                for (Booking b : bookings) {
+                    if (b.getCourtId() == courtId) {
+                        hasOther = true;
+                        break;
+                    }
                 }
             }
             Court court = getCourtById(courtId);
             if (court != null && !hasOther && (court.getStatus() == CourtStatus.BOOKED || court.getStatus() == CourtStatus.IN_USE)) {
                 court.setStatus(CourtStatus.EMPTY);
             }
+
+            // Send DELETE request to backend in background
+            final int idToDelete = bookingId;
+            executorService.execute(() -> {
+                HttpURLConnection conn = null;
+                try {
+                    URL url = new URL(BOOKINGS_API_URL + "/" + idToDelete);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("DELETE");
+                    conn.setRequestProperty("Accept", "application/json");
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode >= 200 && responseCode < 300) {
+                        Log.d("CourtRepository", "Xóa đặt sân trên backend thành công");
+                    } else {
+                        Log.e("CourtRepository", "Lỗi xóa đặt sân trên backend. Response code: " + responseCode);
+                    }
+                } catch (Exception e) {
+                    Log.e("CourtRepository", "Lỗi kết nối khi xóa đặt sân trên backend", e);
+                } finally {
+                    if (conn != null) {
+                        conn.disconnect();
+                    }
+                }
+            });
             return true;
         }
         return false;
@@ -418,7 +499,7 @@ public class CourtRepository {
                 court.getCourtCode() != null ? court.getCourtCode() : "PB-" + String.format("%02d", nextId),
                 court.getName(),
                 court.getStatus(),
-                court.getHourlyRate() > 0 ? court.getHourlyRate() : 15.0,
+                court.getHourlyRate() > 0 ? court.getHourlyRate() : 150000.0,
                 court.getSurfaceType(),
                 court.getImageUrl() != null ? court.getImageUrl() : "",
                 court.getEstimatedCompletionDate()
@@ -660,7 +741,7 @@ public class CourtRepository {
                                         status = CourtStatus.BOOKED;
                                     }
 
-                                    Court courtItem = new Court(id, maSan, ten, status, 15.0, loaimatsan, urlStr, null);
+                                    Court courtItem = new Court(id, maSan, ten, status, 150000.0, loaimatsan, urlStr, null);
                                     if (!obj.isNull("idBanggia")) {
                                         courtItem.setIdBanggia(obj.optInt("idBanggia"));
                                     }
@@ -686,6 +767,120 @@ public class CourtRepository {
                     onComplete.run();
                 }
             }
+        });
+    }
+
+    public void refreshBookingsFromBackend(Runnable onComplete) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(BOOKINGS_API_URL);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    java.io.InputStream inputStream = conn.getInputStream();
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            response.append(line.trim());
+                        }
+
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        if (jsonResponse.optBoolean("success", false)) {
+                            org.json.JSONArray data = jsonResponse.optJSONArray("data");
+                            if (data != null) {
+                                List<Booking> newBookings = new ArrayList<>();
+                                for (int i = 0; i < data.length(); i++) {
+                                    JSONObject obj = data.getJSONObject(i);
+                                    int id = obj.optInt("id", 0);
+                                    int courtId = obj.optInt("courtId", 0);
+                                    String playerName = obj.optString("playerName", "");
+                                    String date = obj.optString("date", "");
+                                    String startTime = obj.optString("startTime", "");
+                                    String endTime = obj.optString("endTime", "");
+                                    double fee = obj.optDouble("fee", 0.0);
+                                    String status = obj.optString("status", "Đã đặt");
+                                    String phoneNumber = obj.optString("phoneNumber", "");
+
+                                    Booking booking = new Booking(id, courtId, playerName, date, startTime, endTime, fee, status);
+                                    booking.setPhoneNumber(phoneNumber);
+                                    newBookings.add(booking);
+                                }
+                                synchronized (bookings) {
+                                    bookings.clear();
+                                    bookings.addAll(newBookings);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Log.e("CourtRepository", "Lỗi tải danh sách đặt sân từ backend. Response code: " + responseCode);
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi tải danh sách đặt sân từ backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
+    public interface CustomerCallback {
+        void onResult(String name);
+    }
+
+    public void lookupCustomerByPhone(String phone, CustomerCallback callback) {
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(ApiConfig.getApiUrl("/api/bookings/customer?phone=" + java.net.URLEncoder.encode(phone, "UTF-8")));
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setConnectTimeout(3000);
+                conn.setReadTimeout(3000);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    java.io.InputStream inputStream = conn.getInputStream();
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            response.append(line.trim());
+                        }
+
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        if (jsonResponse.optBoolean("success", false)) {
+                            JSONObject data = jsonResponse.optJSONObject("data");
+                            if (data != null) {
+                                String name = data.optString("ten", "");
+                                if (!name.isEmpty()) {
+                                    callback.onResult(name);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi tìm kiếm khách hàng bằng sđt", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+            callback.onResult(null);
         });
     }
 

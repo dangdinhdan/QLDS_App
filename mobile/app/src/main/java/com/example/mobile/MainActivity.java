@@ -38,6 +38,12 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.util.TypedValue;
+import android.widget.FrameLayout;
+import com.google.android.material.card.MaterialCardView;
+import com.example.mobile.R.color;
 
 public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCourtActionListener, BookingAdapter.OnBookingActionListener {
 
@@ -102,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private String selectedBookingDate = "2026-06-11"; // Default date matching mock data seed
     private String selectedBookingDuration = "60 phút"; // Default duration
 
+    private final java.util.Map<Integer, Integer> selectedCourtStartIndices = new java.util.HashMap<>();
+    private final java.util.Map<Integer, Integer> selectedCourtEndIndices = new java.util.HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,6 +134,21 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         super.onResume();
         if (viewModel != null) {
             viewModel.refreshData();
+        }
+    }
+
+    private void updateAddBookingButtonState() {
+        if (buttonAddBookingNew == null) return;
+        boolean hasSelection = !selectedCourtStartIndices.isEmpty();
+        buttonAddBookingNew.setEnabled(hasSelection);
+        if (hasSelection) {
+            buttonAddBookingNew.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.primary_container)));
+            buttonAddBookingNew.setTextColor(android.graphics.Color.parseColor("#191E00"));
+            buttonAddBookingNew.setIconTint(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#191E00")));
+        } else {
+            buttonAddBookingNew.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.border_gray)));
+            buttonAddBookingNew.setTextColor(getResources().getColor(R.color.outline));
+            buttonAddBookingNew.setIconTint(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.outline)));
         }
     }
 
@@ -309,7 +333,34 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             });
         }
         if (buttonAddBookingNew != null) {
-            buttonAddBookingNew.setOnClickListener(v -> showAddBookingDialog(null));
+            buttonAddBookingNew.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, AddBookingActivity.class);
+                intent.putExtra("selected_date", selectedBookingDate);
+                intent.putExtra("duration_minutes", getSelectedDurationMinutes());
+
+                int size = selectedCourtStartIndices.size();
+                int[] courtIdsArr = new int[size];
+                int[] startIndicesArr = new int[size];
+                int[] endIndicesArr = new int[size];
+
+                int idx = 0;
+                for (java.util.Map.Entry<Integer, Integer> entry : selectedCourtStartIndices.entrySet()) {
+                    int cId = entry.getKey();
+                    courtIdsArr[idx] = cId;
+                    startIndicesArr[idx] = entry.getValue();
+                    endIndicesArr[idx] = selectedCourtEndIndices.getOrDefault(cId, entry.getValue());
+                    idx++;
+                }
+
+                intent.putExtra("court_ids", courtIdsArr);
+                intent.putExtra("start_indices", startIndicesArr);
+                intent.putExtra("end_indices", endIndicesArr);
+                startActivity(intent);
+                selectedCourtStartIndices.clear();
+                selectedCourtEndIndices.clear();
+                updateAddBookingButtonState();
+            });
+            updateAddBookingButtonState();
         }
 
 
@@ -398,7 +449,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         // Observe total revenue
         viewModel.getTotalRevenue().observe(this, revenue -> {
             if (revenue != null) {
-                String revStr = String.format("$%.2f", revenue);
+                String revStr = formatVnd(revenue);
                 textTodayRevenue.setText(revStr);
                 textStatsRevenue.setText(revStr);
             }
@@ -516,7 +567,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 }
             }
             textDetails.setText(String.format("%s • %s - %s", courtName, booking.getStartTime(), booking.getEndTime()));
-            badgeFee.setText(String.format("$%.2f", booking.getFee()));
+            badgeFee.setText(formatVnd(booking.getFee()));
 
             layoutRecentActivities.addView(activityView);
             count++;
@@ -542,68 +593,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         showDeleteCourtDialog(court);
     }
 
-    private void showEditCourtDialog(Court court) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_edit_court, null);
-        builder.setView(dialogView);
 
-        AlertDialog dialog = builder.create();
-
-        EditText editCourtName = dialogView.findViewById(R.id.edit_court_name);
-        Spinner spinnerSurface = dialogView.findViewById(R.id.spinner_court_surface);
-        Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_court_status);
-
-        editCourtName.setText(court.getName());
-
-        // Surface spinner
-        String[] surfaces = {"Cứng", "Thảm"};
-        ArrayAdapter<String> surfaceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, surfaces);
-        surfaceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerSurface.setAdapter(surfaceAdapter);
-        if (court.getSurfaceType() != null && court.getSurfaceType().equalsIgnoreCase("Thảm")) {
-            spinnerSurface.setSelection(1);
-        } else {
-            spinnerSurface.setSelection(0);
-        }
-
-        // Status spinner
-        String[] statuses = {"Trống", "Đang sử dụng", "Đã đặt", "Bảo trì"};
-        CourtStatus[] statusValues = {CourtStatus.EMPTY, CourtStatus.IN_USE, CourtStatus.BOOKED, CourtStatus.MAINTENANCE};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerStatus.setAdapter(statusAdapter);
-
-        int selectedStatusIndex = 0;
-        for (int i = 0; i < statusValues.length; i++) {
-            if (court.getStatus() == statusValues[i]) {
-                selectedStatusIndex = i;
-                break;
-            }
-        }
-        spinnerStatus.setSelection(selectedStatusIndex);
-
-        // Cancel button
-        dialogView.findViewById(R.id.button_dialog_cancel).setOnClickListener(v -> dialog.dismiss());
-
-        // Confirm button
-        dialogView.findViewById(R.id.button_dialog_confirm).setOnClickListener(v -> {
-            String name = editCourtName.getText().toString().trim();
-            if (TextUtils.isEmpty(name)) {
-                editCourtName.setError("Vui lòng nhập tên sân");
-                return;
-            }
-
-            String surface = surfaces[spinnerSurface.getSelectedItemPosition()];
-            CourtStatus status = statusValues[spinnerStatus.getSelectedItemPosition()];
-
-            viewModel.updateCourt(court.getId(), name, surface, status);
-            Toast.makeText(MainActivity.this, "Cập nhật thông tin sân thành công!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
 
     private void showDeleteCourtDialog(Court court) {
         new AlertDialog.Builder(this)
@@ -641,93 +631,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
     // ================= Business Dialogs Managers =================
 
-    private void showAddBookingDialog(Court preselectedCourt) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_add_booking, null);
-        builder.setView(dialogView);
 
-        AlertDialog dialog = builder.create();
-
-        // Bind Dialog Views
-        Spinner spinnerCourts = dialogView.findViewById(R.id.spinner_courts);
-        EditText editPlayerName = dialogView.findViewById(R.id.edit_player_name);
-        EditText editStartTime = dialogView.findViewById(R.id.edit_start_time);
-        EditText editEndTime = dialogView.findViewById(R.id.edit_end_time);
-
-        // Populate spinner with courts names
-        List<String> courtNames = new ArrayList<>();
-        List<Integer> courtIds = new ArrayList<>();
-        int selectPosition = 0;
-
-        for (int i = 0; i < cachedCourts.size(); i++) {
-            Court c = cachedCourts.get(i);
-            courtNames.add(c.getName() + " ($" + c.getHourlyRate() + "/hr)");
-            courtIds.add(c.getId());
-
-            if (preselectedCourt != null && c.getId() == preselectedCourt.getId()) {
-                selectPosition = i;
-            }
-        }
-
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, courtNames);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCourts.setAdapter(spinnerAdapter);
-        if (!cachedCourts.isEmpty()) {
-            spinnerCourts.setSelection(selectPosition);
-        }
-
-        // Cancel button click
-        dialogView.findViewById(R.id.button_dialog_cancel).setOnClickListener(v -> dialog.dismiss());
-
-        // Confirm button click
-        dialogView.findViewById(R.id.button_dialog_confirm).setOnClickListener(v -> {
-            String playerName = editPlayerName.getText().toString().trim();
-            String startTime = editStartTime.getText().toString().trim();
-            String endTime = editEndTime.getText().toString().trim();
-
-            if (TextUtils.isEmpty(playerName)) {
-                editPlayerName.setError("Vui lòng nhập tên người chơi");
-                return;
-            }
-
-            if (!isValidTime(startTime)) {
-                editStartTime.setError("Định dạng giờ không hợp lệ (HH:MM)");
-                return;
-            }
-
-            if (!isValidTime(endTime)) {
-                editEndTime.setError("Định dạng giờ không hợp lệ (HH:MM)");
-                return;
-            }
-
-            if (spinnerCourts.getSelectedItemPosition() == Spinner.INVALID_POSITION) {
-                Toast.makeText(MainActivity.this, "Không tìm thấy sân nào để đặt", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Calculate duration and fee
-            int selectedIndex = spinnerCourts.getSelectedItemPosition();
-            Court court = cachedCourts.get(selectedIndex);
-
-            double duration = calculateDuration(startTime, endTime);
-            if (duration <= 0) {
-                editEndTime.setError("Giờ kết thúc phải lớn hơn giờ bắt đầu");
-                return;
-            }
-
-            double fee = duration * court.getHourlyRate();
-
-            // Create Booking
-            Booking booking = new Booking(0, court.getId(), playerName, selectedBookingDate, startTime, endTime, fee);
-            viewModel.addBooking(booking);
-
-            Toast.makeText(MainActivity.this, "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
 
     private void showChangeStatusDialog(Court court) {
         String[] statuses = {"EMPTY (Trống)", "BOOKED (Đã đặt)", "IN USE (Đang dùng)", "MAINTENANCE (Bảo trì)"};
@@ -752,98 +656,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 .show();
     }
 
-    // Helper method to validate HH:MM time format
-    private boolean isValidTime(String time) {
-        if (TextUtils.isEmpty(time)) return false;
-        String[] parts = time.split(":");
-        if (parts.length != 2) return false;
-        try {
-            int hour = Integer.parseInt(parts[0]);
-            int minute = Integer.parseInt(parts[1]);
-            return hour >= 0 && hour < 24 && minute >= 0 && minute < 60;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
 
-    // Helper method to calculate hours between start & end times
-    private double calculateDuration(String start, String end) {
-        try {
-            String[] startParts = start.split(":");
-            String[] endParts = end.split(":");
-            double startHour = Integer.parseInt(startParts[0]) + Integer.parseInt(startParts[1]) / 60.0;
-            double endHour = Integer.parseInt(endParts[0]) + Integer.parseInt(endParts[1]) / 60.0;
-            return endHour - startHour;
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
-
-    private void showAddCourtDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_edit_court, null);
-        builder.setView(dialogView);
-
-        AlertDialog dialog = builder.create();
-
-        TextView textTitle = dialogView.findViewById(R.id.text_dialog_title);
-        EditText editCourtName = dialogView.findViewById(R.id.edit_court_name);
-        Spinner spinnerSurface = dialogView.findViewById(R.id.spinner_court_surface);
-        Spinner spinnerStatus = dialogView.findViewById(R.id.spinner_court_status);
-
-        if (textTitle != null) {
-            textTitle.setText("Thêm sân mới");
-        }
-
-        // Surface spinner
-        String[] surfaces = {"Cứng", "Thảm"};
-        ArrayAdapter<String> surfaceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, surfaces);
-        surfaceAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerSurface.setAdapter(surfaceAdapter);
-        spinnerSurface.setSelection(0); // Default to Cứng
-
-        // Status spinner
-        String[] statuses = {"Trống", "Đang sử dụng", "Đã đặt", "Bảo trì"};
-        CourtStatus[] statusValues = {CourtStatus.EMPTY, CourtStatus.IN_USE, CourtStatus.BOOKED, CourtStatus.MAINTENANCE};
-        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, statuses);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerStatus.setAdapter(statusAdapter);
-        spinnerStatus.setSelection(0); // Default to EMPTY (Trống)
-
-        // Cancel button
-        dialogView.findViewById(R.id.button_dialog_cancel).setOnClickListener(v -> dialog.dismiss());
-
-        // Confirm button
-        MaterialButton buttonConfirm = dialogView.findViewById(R.id.button_dialog_confirm);
-        if (buttonConfirm != null) {
-            buttonConfirm.setText("Thêm sân");
-        }
-        dialogView.findViewById(R.id.button_dialog_confirm).setOnClickListener(v -> {
-            String name = editCourtName.getText().toString().trim();
-            if (TextUtils.isEmpty(name)) {
-                editCourtName.setError("Vui lòng nhập tên sân");
-                return;
-            }
-
-            String surface = surfaces[spinnerSurface.getSelectedItemPosition()];
-            CourtStatus status = statusValues[spinnerStatus.getSelectedItemPosition()];
-
-            // Use default images
-            String defaultImage = "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500";
-            if (surface.equalsIgnoreCase("Thảm")) {
-                defaultImage = "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=500";
-            }
-
-            Court newCourt = new Court(0, name, status, 15.0, surface, defaultImage, null);
-            viewModel.addCourt(newCourt);
-
-            Toast.makeText(MainActivity.this, "Thêm sân mới thành công!", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
-
-        dialog.show();
-    }
 
     private void selectFilterChip(String filter) {
         selectedFilter = filter;
@@ -987,212 +800,234 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         popup.show();
     }
 
-    private void rebuildTimelineGrid() {
-        if (layoutTimelineCourtsColumn == null || layoutTimelineRowsContainer == null) return;
+   private void rebuildTimelineGrid() {
+      if (this.layoutTimelineCourtsColumn != null && this.layoutTimelineRowsContainer != null) {
+         TypedValue outValue = new TypedValue();
+         this.getTheme().resolveAttribute(16843534, outValue, true);
+         int clickableBackgroundResId = outValue.resourceId;
+         this.layoutTimelineCourtsColumn.removeAllViews();
+         this.layoutTimelineRowsContainer.removeAllViews();
+         if (this.layoutTimelineTimeHeaders != null) {
+            this.layoutTimelineTimeHeaders.removeAllViews();
+         }
 
-        // Clear layouts
-        layoutTimelineCourtsColumn.removeAllViews();
-        layoutTimelineRowsContainer.removeAllViews();
-        if (layoutTimelineTimeHeaders != null) {
-            layoutTimelineTimeHeaders.removeAllViews();
-        }
-
-        // Add top-left spacer to courts column
-        View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dpToPx(40)
-        ));
-        spacer.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-        layoutTimelineCourtsColumn.addView(spacer);
-
-        int intervalMinutes = getSelectedDurationMinutes();
-        int numCols = 960 / intervalMinutes; // 16 hours * 60 minutes = 960 minutes
-
-        // Rebuild time headers dynamically
-        if (layoutTimelineTimeHeaders != null) {
-            ViewGroup.LayoutParams headersParams = layoutTimelineTimeHeaders.getLayoutParams();
+         View spacer = new View(this);
+         spacer.setLayoutParams(new LinearLayout.LayoutParams(-1, this.dpToPx(40)));
+         spacer.setBackgroundColor(this.getResources().getColor(17170445));
+         this.layoutTimelineCourtsColumn.addView(spacer);
+         int intervalMinutes = this.getSelectedDurationMinutes();
+         int numCols = 960 / intervalMinutes;
+         if (this.layoutTimelineTimeHeaders != null) {
+            ViewGroup.LayoutParams headersParams = this.layoutTimelineTimeHeaders.getLayoutParams();
             if (headersParams != null) {
-                headersParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                layoutTimelineTimeHeaders.setLayoutParams(headersParams);
+               headersParams.width = -2;
+               this.layoutTimelineTimeHeaders.setLayoutParams(headersParams);
             }
 
-            for (int i = 0; i < numCols; i++) {
-                int minutesFromStart = i * intervalMinutes;
-                int totalMinutes = 6 * 60 + minutesFromStart;
-                int hour = totalMinutes / 60;
-                int minute = totalMinutes % 60;
-                String timeStr = String.format("%02d:%02d", hour, minute);
-
-                TextView textHeader = new TextView(this);
-                LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
-                        dpToPx(100),
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                );
-                textHeader.setLayoutParams(headerParams);
-                textHeader.setText(timeStr);
-                textHeader.setTextSize(12);
-                textHeader.setTextColor(android.graphics.Color.parseColor("#556679"));
-                textHeader.setGravity(android.view.Gravity.CENTER);
-                textHeader.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-                layoutTimelineTimeHeaders.addView(textHeader);
+            for(int i = 0; i < numCols; ++i) {
+               int minutesFromStart = i * intervalMinutes;
+               int totalMinutes = 360 + minutesFromStart;
+               int hour = totalMinutes / 60;
+               int minute = totalMinutes % 60;
+               String timeStr = String.format("%02d:%02d", hour, minute);
+               TextView textHeader = new TextView(this);
+               LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(this.dpToPx(100), -1);
+               textHeader.setLayoutParams(headerParams);
+               textHeader.setText(timeStr);
+               textHeader.setTextSize(12.0F);
+               textHeader.setTextColor(Color.parseColor("#556679"));
+               textHeader.setGravity(17);
+               textHeader.setTypeface(Typeface.DEFAULT_BOLD);
+               this.layoutTimelineTimeHeaders.addView(textHeader);
             }
-        }
+         }
 
-        if (layoutTimelineRowsContainer != null) {
-            ViewGroup.LayoutParams rowsParams = layoutTimelineRowsContainer.getLayoutParams();
+         if (this.layoutTimelineRowsContainer != null) {
+            ViewGroup.LayoutParams rowsParams = this.layoutTimelineRowsContainer.getLayoutParams();
             if (rowsParams != null) {
-                rowsParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                layoutTimelineRowsContainer.setLayoutParams(rowsParams);
+               rowsParams.width = -2;
+               this.layoutTimelineRowsContainer.setLayoutParams(rowsParams);
             }
-        }
+         }
 
-        if (cachedCourts == null || cachedCourts.isEmpty()) {
-            return;
-        }
+         if (this.cachedCourts != null && !this.cachedCourts.isEmpty()) {
+            for(Court court : this.cachedCourts) {
+               TextView textCourtName = new TextView(this);
+               LinearLayout.LayoutParams courtParams = new LinearLayout.LayoutParams(-1, this.dpToPx(60));
+               textCourtName.setLayoutParams(courtParams);
+               textCourtName.setText(court.getName());
+               textCourtName.setGravity(17);
+               textCourtName.setTextSize(13.0F);
+               textCourtName.setTypeface(Typeface.DEFAULT_BOLD);
+               textCourtName.setTextColor(this.getResources().getColor(color.primary));
+               textCourtName.setBackgroundColor(this.getResources().getColor(color.surface_header));
+               this.layoutTimelineCourtsColumn.addView(textCourtName);
+               View borderLeft = new View(this);
+               borderLeft.setLayoutParams(new LinearLayout.LayoutParams(-1, this.dpToPx(1)));
+               borderLeft.setBackgroundColor(this.getResources().getColor(color.border_gray));
+               this.layoutTimelineCourtsColumn.addView(borderLeft);
+               FrameLayout rowFrame = new FrameLayout(this);
+               LinearLayout.LayoutParams frameParams = new LinearLayout.LayoutParams(this.dpToPx(numCols * 100), this.dpToPx(60));
+               rowFrame.setLayoutParams(frameParams);
+               rowFrame.setBackgroundColor(this.getResources().getColor(color.white));
+               LinearLayout bgLayout = new LinearLayout(this);
+               bgLayout.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+               bgLayout.setOrientation(0);
 
-        // Iterate courts to build sticky column & timelines
-        for (Court court : cachedCourts) {
-            // Sticky Court Name
-            TextView textCourtName = new TextView(this);
-            LinearLayout.LayoutParams courtParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    dpToPx(60)
-            );
-            textCourtName.setLayoutParams(courtParams);
-            textCourtName.setText(court.getName());
-            textCourtName.setGravity(android.view.Gravity.CENTER);
-            textCourtName.setTextSize(13);
-            textCourtName.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-            textCourtName.setTextColor(getResources().getColor(R.color.primary));
-            textCourtName.setBackgroundColor(getResources().getColor(R.color.surface_header));
-            layoutTimelineCourtsColumn.addView(textCourtName);
+               for(int i = 0; i < numCols; ++i) {
+                  final int cellIndex = i;
+                  View cellView = new View(this);
+                  LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(this.dpToPx(99), -1);
+                  cellView.setLayoutParams(cellParams);
+                  boolean isSelected = false;
+                  if (this.selectedCourtStartIndices.containsKey(court.getId())) {
+                     int startIdx = (Integer)this.selectedCourtStartIndices.get(court.getId());
+                     int endIdx = (Integer)this.selectedCourtEndIndices.get(court.getId());
+                     int minIdx = Math.min(startIdx, endIdx);
+                     int maxIdx = Math.max(startIdx, endIdx);
+                     if (cellIndex >= minIdx && cellIndex <= maxIdx) {
+                        isSelected = true;
+                     }
+                  }
 
-            // Add border below court name
-            View borderLeft = new View(this);
-            borderLeft.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(1)));
-            borderLeft.setBackgroundColor(getResources().getColor(R.color.border_gray));
-            layoutTimelineCourtsColumn.addView(borderLeft);
+                  if (isSelected) {
+                     cellView.setBackgroundColor(this.getResources().getColor(color.secondary_container));
+                  } else {
+                     cellView.setBackgroundResource(clickableBackgroundResId);
+                  }
 
-            // Row Container
-            android.widget.FrameLayout rowFrame = new android.widget.FrameLayout(this);
-            LinearLayout.LayoutParams frameParams = new LinearLayout.LayoutParams(
-                    dpToPx(numCols * 100),
-                    dpToPx(60)
-            );
-            rowFrame.setLayoutParams(frameParams);
-            rowFrame.setBackgroundColor(getResources().getColor(R.color.white));
+                  cellView.setOnClickListener((v) -> {
+                     int courtId = court.getId();
+                     if (!this.selectedCourtStartIndices.containsKey(courtId)) {
+                        this.selectedCourtStartIndices.put(courtId, cellIndex);
+                        this.selectedCourtEndIndices.put(courtId, cellIndex);
+                     } else {
+                        int start = (Integer)this.selectedCourtStartIndices.get(courtId);
+                        int end = (Integer)this.selectedCourtEndIndices.get(courtId);
+                        if (start == end) {
+                           if (start == cellIndex) {
+                              this.selectedCourtStartIndices.remove(courtId);
+                              this.selectedCourtEndIndices.remove(courtId);
+                           } else {
+                              boolean hasOverlap = false;
+                              int minIdx = Math.min(start, cellIndex);
+                              int maxIdx = Math.max(start, cellIndex);
+                              double rangeStartHour = (double)6.0F + (double)(minIdx * intervalMinutes) / (double)60.0F;
+                              double rangeEndHour = (double)6.0F + (double)((maxIdx + 1) * intervalMinutes) / (double)60.0F;
+                              if (this.cachedBookings != null) {
+                                 for(Booking b : this.cachedBookings) {
+                                    if (b.getCourtId() == courtId && this.selectedBookingDate.equals(b.getDate())) {
+                                       double bStart = this.timeToHours(b.getStartTime());
+                                       double bEnd = this.timeToHours(b.getEndTime());
+                                       if (rangeStartHour < bEnd && rangeEndHour > bStart) {
+                                          hasOverlap = true;
+                                          break;
+                                       }
+                                    }
+                                 }
+                              }
 
-            // Background cells and gridlines
-            LinearLayout bgLayout = new LinearLayout(this);
-            bgLayout.setLayoutParams(new android.widget.FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            ));
-            bgLayout.setOrientation(LinearLayout.HORIZONTAL);
+                              if (hasOverlap) {
+                                 Toast.makeText(this, "Khung giờ được chọn trùng với lịch đặt sân đã có!", 0).show();
+                                 this.selectedCourtStartIndices.put(courtId, cellIndex);
+                                 this.selectedCourtEndIndices.put(courtId, cellIndex);
+                              } else {
+                                 this.selectedCourtEndIndices.put(courtId, cellIndex);
+                              }
+                           }
+                        } else {
+                           this.selectedCourtStartIndices.put(courtId, cellIndex);
+                           this.selectedCourtEndIndices.put(courtId, cellIndex);
+                        }
+                     }
 
-            for (int i = 0; i < numCols; i++) {
-                View cellView = new View(this);
-                LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(
-                        dpToPx(99),
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                );
-                cellView.setLayoutParams(cellParams);
-                bgLayout.addView(cellView);
+                     this.updateAddBookingButtonState();
+                     this.rebuildTimelineGrid();
+                  });
+                  bgLayout.addView(cellView);
+                  View lineView = new View(this);
+                  LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(this.dpToPx(1), -1);
+                  lineView.setLayoutParams(lineParams);
+                  lineView.setBackgroundColor(this.getResources().getColor(color.border_gray));
+                  bgLayout.addView(lineView);
+               }
 
-                View lineView = new View(this);
-                LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
-                        dpToPx(1),
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                );
-                lineView.setLayoutParams(lineParams);
-                lineView.setBackgroundColor(getResources().getColor(R.color.border_gray));
-                bgLayout.addView(lineView);
-            }
-            rowFrame.addView(bgLayout);
-
-            // Filter bookings
-            List<Booking> courtBookings = new ArrayList<>();
-            if (cachedBookings != null) {
-                for (Booking b : cachedBookings) {
-                    if (b.getCourtId() == court.getId() && selectedBookingDate.equals(b.getDate())) {
+               rowFrame.addView(bgLayout);
+               List<Booking> courtBookings = new ArrayList();
+               if (this.cachedBookings != null) {
+                  for(Booking b : this.cachedBookings) {
+                     if (b.getCourtId() == court.getId() && this.selectedBookingDate.equals(b.getDate())) {
                         courtBookings.add(b);
-                    }
-                }
+                     }
+                  }
+               }
+
+               for(Booking booking : courtBookings) {
+                  double startHour = this.timeToHours(booking.getStartTime());
+                  double endHour = this.timeToHours(booking.getEndTime());
+                  if (startHour < (double)6.0F) {
+                     startHour = (double)6.0F;
+                  }
+
+                  if (endHour > (double)22.0F) {
+                     endHour = (double)22.0F;
+                  }
+
+                  if (!(startHour >= endHour)) {
+                     double offset = startHour - (double)6.0F;
+                     double duration = endHour - startHour;
+                     double pxPerHour = (double)60.0F * ((double)100.0F / (double)intervalMinutes);
+                     int cardLeft = this.dpToPx((int)Math.round(offset * pxPerHour));
+                     int cardWidth = this.dpToPx((int)Math.round(duration * pxPerHour)) - this.dpToPx(4);
+                     MaterialCardView cardView = new MaterialCardView(this);
+                     FrameLayout.LayoutParams cardParams = new FrameLayout.LayoutParams(cardWidth, this.dpToPx(50));
+                     cardParams.leftMargin = cardLeft + this.dpToPx(2);
+                     cardParams.gravity = 16;
+                     cardView.setLayoutParams(cardParams);
+                     cardView.setCardElevation(0.0F);
+                     cardView.setRadius((float)this.dpToPx(4));
+                     int bgColorRes = color.secondary;
+                     int textColorRes = color.white;
+                     if (booking.getStatus() != null) {
+                        if (booking.getStatus().equalsIgnoreCase("Đang sử dụng")) {
+                           bgColorRes = color.primary_container;
+                           textColorRes = color.black;
+                        } else if (booking.getStatus().equalsIgnoreCase("Hoàn thành")) {
+                           bgColorRes = color.status_empty;
+                           textColorRes = color.white;
+                        } else if (booking.getStatus().equalsIgnoreCase("Đã hủy")) {
+                           bgColorRes = color.status_maintenance;
+                           textColorRes = color.white;
+                        }
+                     }
+
+                     cardView.setCardBackgroundColor(this.getResources().getColor(bgColorRes));
+                     cardView.setStrokeWidth(0);
+                     TextView textInfo = new TextView(this);
+                     FrameLayout.LayoutParams textParams = new FrameLayout.LayoutParams(-1, -1);
+                     textInfo.setLayoutParams(textParams);
+                     textInfo.setText(booking.getPlayerName() + "\n" + booking.getStartTime() + " - " + booking.getEndTime());
+                     textInfo.setGravity(17);
+                     textInfo.setTextSize(10.0F);
+                     textInfo.setTextColor(this.getResources().getColor(textColorRes));
+                     textInfo.setTypeface(Typeface.DEFAULT_BOLD);
+                     textInfo.setPadding(this.dpToPx(4), this.dpToPx(4), this.dpToPx(4), this.dpToPx(4));
+                     cardView.addView(textInfo);
+                     cardView.setOnClickListener((v) -> this.showBookingActionDialog(booking));
+                     rowFrame.addView(cardView);
+                  }
+               }
+
+               this.layoutTimelineRowsContainer.addView(rowFrame);
+               View borderRow = new View(this);
+               borderRow.setLayoutParams(new LinearLayout.LayoutParams(-1, this.dpToPx(1)));
+               borderRow.setBackgroundColor(this.getResources().getColor(color.border_gray));
+               this.layoutTimelineRowsContainer.addView(borderRow);
             }
 
-            // Draw bookings
-            for (Booking booking : courtBookings) {
-                double startHour = timeToHours(booking.getStartTime());
-                double endHour = timeToHours(booking.getEndTime());
-
-                if (startHour < 6.0) startHour = 6.0;
-                if (endHour > 22.0) endHour = 22.0;
-                if (startHour >= endHour) continue;
-
-                double offset = startHour - 6.0;
-                double duration = endHour - startHour;
-
-                double pxPerHour = 60.0 * (100.0 / intervalMinutes);
-                int cardLeft = dpToPx((int) Math.round(offset * pxPerHour));
-                int cardWidth = dpToPx((int) Math.round(duration * pxPerHour)) - dpToPx(4);
-
-                com.google.android.material.card.MaterialCardView cardView = new com.google.android.material.card.MaterialCardView(this);
-                android.widget.FrameLayout.LayoutParams cardParams = new android.widget.FrameLayout.LayoutParams(
-                        cardWidth,
-                        dpToPx(50)
-                );
-                cardParams.leftMargin = cardLeft + dpToPx(2);
-                cardParams.gravity = android.view.Gravity.CENTER_VERTICAL;
-                cardView.setLayoutParams(cardParams);
-                cardView.setCardElevation(0);
-                cardView.setRadius((float) dpToPx(4));
-                
-                int bgColorRes = R.color.secondary;
-                int textColorRes = R.color.white;
-                if (booking.getStatus() != null) {
-                    if (booking.getStatus().equalsIgnoreCase("Đang sử dụng")) {
-                        bgColorRes = R.color.primary_container;
-                        textColorRes = R.color.black;
-                    } else if (booking.getStatus().equalsIgnoreCase("Hoàn thành")) {
-                        bgColorRes = R.color.status_empty;
-                        textColorRes = R.color.white;
-                    } else if (booking.getStatus().equalsIgnoreCase("Đã hủy")) {
-                        bgColorRes = R.color.status_maintenance;
-                        textColorRes = R.color.white;
-                    }
-                }
-                cardView.setCardBackgroundColor(getResources().getColor(bgColorRes));
-                cardView.setStrokeWidth(0);
-
-                TextView textInfo = new TextView(this);
-                android.widget.FrameLayout.LayoutParams textParams = new android.widget.FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                );
-                textInfo.setLayoutParams(textParams);
-                textInfo.setText(booking.getPlayerName() + "\n" + booking.getStartTime() + " - " + booking.getEndTime());
-                textInfo.setGravity(android.view.Gravity.CENTER);
-                textInfo.setTextSize(10);
-                textInfo.setTextColor(getResources().getColor(textColorRes));
-                textInfo.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-                textInfo.setPadding(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4));
-                cardView.addView(textInfo);
-
-                cardView.setOnClickListener(v -> showBookingActionDialog(booking));
-
-                rowFrame.addView(cardView);
-            }
-
-            layoutTimelineRowsContainer.addView(rowFrame);
-
-            View borderRow = new View(this);
-            borderRow.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(1)));
-            borderRow.setBackgroundColor(getResources().getColor(R.color.border_gray));
-            layoutTimelineRowsContainer.addView(borderRow);
-        }
-    }
-
+         }
+      }
+   }
     private void showBookingActionDialog(Booking booking) {
         String courtName = "Court #" + booking.getCourtId();
         if (cachedCourts != null) {
@@ -1208,7 +1043,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 "Thời gian: " + booking.getStartTime() + " - " + booking.getEndTime() + "\n" +
                 "Ngày đặt: " + formatDbDateToDisplay(booking.getDate()) + "\n" +
                 "Trạng thái: " + booking.getStatus() + "\n" +
-                "Chi phí: $" + booking.getFee();
+                "Chi phí: " + formatVnd(booking.getFee());
 
         new AlertDialog.Builder(this)
                 .setTitle("Chi tiết lịch đặt sân")
@@ -1254,5 +1089,13 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         } catch (Exception e) {
             return displayDate;
         }
+    }
+    private String formatVnd(double value) {
+        long vnd = Math.round(value);
+        java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+        java.text.DecimalFormatSymbols symbols = formatter.getDecimalFormatSymbols();
+        symbols.setGroupingSeparator('.');
+        formatter.setDecimalFormatSymbols(symbols);
+        return formatter.format(vnd) + "đ";
     }
 }

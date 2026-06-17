@@ -1,5 +1,6 @@
 package com.example.mobile.repository;
 
+import com.example.mobile.config.ApiConfig;
 import com.example.mobile.model.UserCredentials;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -11,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 public class LoginRepository {
     private static LoginRepository instance;
-    private static final String BASE_URL = "http://10.0.2.2:8080/api/auth/login";
+    private static final String BASE_URL = ApiConfig.getApiUrl("/api/auth/login");
 
     private LoginRepository() {}
 
