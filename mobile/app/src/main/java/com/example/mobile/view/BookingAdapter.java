@@ -94,6 +94,12 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             textCourt.setText(courtName);
             textTime.setText(String.format("%s - %s", booking.getStartTime(), booking.getEndTime()));
 
+            itemView.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(v.getContext(), com.example.mobile.BookingDetailActivity.class);
+                intent.putExtra("booking_id", booking.getId());
+                v.getContext().startActivity(intent);
+            });
+
             // Reset Strikethrough style default
             textTime.setPaintFlags(textTime.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             textTime.setTextColor(Color.parseColor("#191C1D"));

@@ -19,4 +19,5 @@ public class BookingDTO {
     private String endTime;
     private Double fee;
     private String status;
+    private String notes;
 }

@@ -76,6 +76,20 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private ProgressBar progressStatsOccupancy;
     private TextView textStatsPopularCourt;
     private TextView textStatsRevenue;
+    private TextView textStatsBookings;
+    private TextView textStatsBookingsSub;
+    private View barMonday;
+    private View barTuesday;
+    private View barWednesday;
+    private View barThursday;
+    private View barFriday;
+    private View barSaturday;
+    private View barSunday;
+    private ProgressBar progressCustomerSegment;
+    private TextView textCustomerSegmentPercent;
+    private TextView textLegendReturning;
+    private TextView textLegendNew;
+    private TextView textTrendMonth;
 
     // Keep cached lists of data
     private List<Court> cachedCourts = new ArrayList<>();
@@ -105,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
     private com.google.android.material.button.MaterialButton buttonRefreshBookings;
     private com.google.android.material.button.MaterialButton buttonAddBookingNew;
     
-    private String selectedBookingDate = "2026-06-11"; // Default date matching mock data seed
+    private String selectedBookingDate = java.time.LocalDate.now().toString();
     private String selectedBookingDuration = "60 phút"; // Default duration
 
     private final java.util.Map<Integer, Integer> selectedCourtStartIndices = new java.util.HashMap<>();
@@ -124,9 +138,11 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         setupRecyclerViews();
         observeViewModel();
         setupActions();
+        setupStatsTab();
 
         // Initialize active tab state and FAB action
         showTab(scrollHome);
+        handleIntentTabs(getIntent());
     }
 
     @Override
@@ -164,18 +180,34 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         textTodayRevenue = findViewById(R.id.text_today_revenue);
         textBookingsCount = findViewById(R.id.text_bookings_count);
         textActiveCourtsRatio = findViewById(R.id.text_active_courts_ratio);
-        layoutQuickCourtsContainer = findViewById(R.id.layout_quick_courts_container);
-        layoutRecentActivities = findViewById(R.id.layout_recent_activities);
+        layoutQuickCourtsContainer = null;
+        layoutRecentActivities = null;
 
         // Recyclers
         recyclerCourts = findViewById(R.id.recycler_courts);
         recyclerPriceTables = findViewById(R.id.recycler_price_tables);
 
         // Stats elements
-        textStatsOccupancy = findViewById(R.id.text_stats_occupancy);
-        progressStatsOccupancy = findViewById(R.id.progress_stats_occupancy);
-        textStatsPopularCourt = findViewById(R.id.text_stats_popular_court);
+        textStatsOccupancy = null;
+        progressStatsOccupancy = null;
+        textStatsPopularCourt = null;
         textStatsRevenue = findViewById(R.id.text_stats_revenue);
+        textStatsBookings = findViewById(R.id.text_stats_bookings);
+        textStatsBookingsSub = findViewById(R.id.text_stats_bookings_sub);
+
+        barMonday = findViewById(R.id.bar_monday);
+        barTuesday = findViewById(R.id.bar_tuesday);
+        barWednesday = findViewById(R.id.bar_wednesday);
+        barThursday = findViewById(R.id.bar_thursday);
+        barFriday = findViewById(R.id.bar_friday);
+        barSaturday = findViewById(R.id.bar_saturday);
+        barSunday = findViewById(R.id.bar_sunday);
+        textTrendMonth = findViewById(R.id.text_trend_month);
+
+        progressCustomerSegment = findViewById(R.id.progress_customer_segment);
+        textCustomerSegmentPercent = findViewById(R.id.text_customer_segment_percent);
+        textLegendReturning = findViewById(R.id.text_legend_returning);
+        textLegendNew = findViewById(R.id.text_legend_new);
 
         // Search & Filter in Courts Tab
         editSearchCourts = findViewById(R.id.edit_search_courts);
@@ -229,10 +261,246 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             return false;
         });
 
-        // "Xem tất cả" redirect link to courts tab
-        findViewById(R.id.text_view_all_courts).setOnClickListener(v -> {
-            bottomNavigation.setSelectedItemId(R.id.navigation_courts);
-        });
+        // Quick Access Grid click listeners
+        View cardQuickCourts = findViewById(R.id.card_quick_courts);
+        if (cardQuickCourts != null) {
+            cardQuickCourts.setOnClickListener(v -> {
+                bottomNavigation.setSelectedItemId(R.id.navigation_courts);
+            });
+        }
+
+        View cardQuickCustomers = findViewById(R.id.card_quick_customers);
+        if (cardQuickCustomers != null) {
+            cardQuickCustomers.setOnClickListener(v -> {
+                bottomNavigation.setSelectedItemId(R.id.navigation_bookings);
+            });
+        }
+
+        View cardQuickStats = findViewById(R.id.card_quick_stats);
+        if (cardQuickStats != null) {
+            cardQuickStats.setOnClickListener(v -> {
+                bottomNavigation.setSelectedItemId(R.id.navigation_stats);
+            });
+        }
+
+        View cardQuickPricing = findViewById(R.id.card_quick_pricing);
+        if (cardQuickPricing != null) {
+            cardQuickPricing.setOnClickListener(v -> {
+                bottomNavigation.setSelectedItemId(R.id.navigation_pricing);
+            });
+        }
+    }
+
+    private void setupStatsTab() {
+        TextView chipToday = findViewById(R.id.chip_today);
+        TextView chipThisWeek = findViewById(R.id.chip_this_week);
+        TextView chipThisMonth = findViewById(R.id.chip_this_month);
+
+        if (chipToday != null && chipThisWeek != null && chipThisMonth != null) {
+            chipToday.setOnClickListener(v -> {
+                chipToday.setBackgroundResource(R.drawable.bg_period_chip_selected);
+                chipToday.setTextColor(0xFF191E00);
+                chipThisWeek.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipThisWeek.setTextColor(getResources().getColor(R.color.secondary));
+                chipThisMonth.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipThisMonth.setTextColor(getResources().getColor(R.color.secondary));
+                updateStatsForPeriod("today");
+            });
+
+            chipThisWeek.setOnClickListener(v -> {
+                chipToday.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipToday.setTextColor(getResources().getColor(R.color.secondary));
+                chipThisWeek.setBackgroundResource(R.drawable.bg_period_chip_selected);
+                chipThisWeek.setTextColor(0xFF191E00);
+                chipThisMonth.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipThisMonth.setTextColor(getResources().getColor(R.color.secondary));
+                updateStatsForPeriod("week");
+            });
+
+            chipThisMonth.setOnClickListener(v -> {
+                chipToday.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipToday.setTextColor(getResources().getColor(R.color.secondary));
+                chipThisWeek.setBackgroundResource(R.drawable.bg_period_chip_unselected);
+                chipThisWeek.setTextColor(getResources().getColor(R.color.secondary));
+                chipThisMonth.setBackgroundResource(R.drawable.bg_period_chip_selected);
+                chipThisMonth.setTextColor(0xFF191E00);
+                updateStatsForPeriod("month");
+            });
+        }
+    }
+
+    private void updateStatsForPeriod(String period) {
+        if (cachedBookings == null || cachedBookings.isEmpty()) return;
+
+        java.time.LocalDate refDate = java.time.LocalDate.now();
+
+        if (textTrendMonth != null) {
+            textTrendMonth.setText("Tháng " + refDate.getMonthValue() + ", " + refDate.getYear());
+        }
+
+        double totalRevenue = 0.0;
+        int totalBookingsCount = 0;
+        int successfulBookingsCount = 0;
+
+        java.time.temporal.TemporalField woy = java.time.temporal.WeekFields.of(java.util.Locale.getDefault()).weekOfWeekBasedYear();
+
+        // Customer count helpers
+        java.util.Map<String, Integer> customerBookingCounts = new java.util.HashMap<>();
+        // All history counts to determine returning status
+        for (Booking b : cachedBookings) {
+            String customerKey = b.getPhoneNumber() != null && !b.getPhoneNumber().trim().isEmpty() 
+                    ? b.getPhoneNumber().trim() : b.getPlayerName();
+            if (customerKey != null && !customerKey.isEmpty()) {
+                customerBookingCounts.put(customerKey, customerBookingCounts.getOrDefault(customerKey, 0) + 1);
+            }
+        }
+
+        int newCustomers = 0;
+        int returningCustomers = 0;
+        java.util.Set<String> uniqueCustomersInPeriod = new java.util.HashSet<>();
+
+        for (Booking b : cachedBookings) {
+            java.time.LocalDate bDate;
+            try {
+                bDate = java.time.LocalDate.parse(b.getDate());
+            } catch (Exception e) {
+                continue;
+            }
+
+            boolean matches = false;
+            if ("today".equalsIgnoreCase(period)) {
+                matches = bDate.equals(refDate);
+            } else if ("week".equalsIgnoreCase(period)) {
+                matches = (bDate.getYear() == refDate.getYear() && bDate.get(woy) == refDate.get(woy));
+            } else if ("month".equalsIgnoreCase(period)) {
+                matches = (bDate.getYear() == refDate.getYear() && bDate.getMonthValue() == refDate.getMonthValue());
+            }
+
+            if (matches) {
+                totalBookingsCount++;
+                String status = b.getStatus();
+                if ("Hoàn thành".equalsIgnoreCase(status) || "Đã thanh toán".equalsIgnoreCase(status)) {
+                    successfulBookingsCount++;
+                    totalRevenue += b.getFee();
+                }
+
+                String customerKey = b.getPhoneNumber() != null && !b.getPhoneNumber().trim().isEmpty() 
+                        ? b.getPhoneNumber().trim() : b.getPlayerName();
+                if (customerKey != null && !customerKey.isEmpty()) {
+                    uniqueCustomersInPeriod.add(customerKey);
+                }
+            }
+        }
+
+        // Calculate returning vs new customer statistics in current period
+        for (String customer : uniqueCustomersInPeriod) {
+            int historicalCount = customerBookingCounts.getOrDefault(customer, 0);
+            if (historicalCount > 1) {
+                returningCustomers++;
+            } else {
+                newCustomers++;
+            }
+        }
+
+        int totalCustomers = newCustomers + returningCustomers;
+        int returningPct = 65; // fallback defaults
+        int newPct = 35;
+        if (totalCustomers > 0) {
+            returningPct = (int) Math.round(((double) returningCustomers / totalCustomers) * 100.0);
+            newPct = 100 - returningPct;
+        }
+
+        // Update cards
+        if (textStatsRevenue != null) {
+            textStatsRevenue.setText(formatVnd(totalRevenue));
+        }
+        if (textStatsBookings != null) {
+            textStatsBookings.setText(String.valueOf(totalBookingsCount));
+        }
+        if (textStatsBookingsSub != null) {
+            int successRate = totalBookingsCount == 0 ? 100 : (int) Math.round(((double) successfulBookingsCount / totalBookingsCount) * 100.0);
+            textStatsBookingsSub.setText(successRate + "% thành công");
+        }
+
+        // Donut Chart updates
+        if (progressCustomerSegment != null) {
+            progressCustomerSegment.setProgress(returningPct);
+        }
+        if (textCustomerSegmentPercent != null) {
+            textCustomerSegmentPercent.setText(returningPct + "%");
+        }
+        if (textLegendReturning != null) {
+            textLegendReturning.setText("Quay lại (" + returningPct + "%)");
+        }
+        if (textLegendNew != null) {
+            textLegendNew.setText("Mới (" + newPct + "%)");
+        }
+
+        // Draw and scale Week Bar Chart dynamically
+        updateWeeklyTrendChart(refDate);
+    }
+
+    private void updateWeeklyTrendChart(java.time.LocalDate refDate) {
+        // Monday of target week
+        java.time.LocalDate monday = refDate.with(java.time.DayOfWeek.MONDAY);
+        double[] dailyRevenues = new double[7];
+        double maxRevenue = 0.0;
+
+        for (int i = 0; i < 7; i++) {
+            java.time.LocalDate day = monday.plusDays(i);
+            double dayRevenue = 0.0;
+            for (Booking b : cachedBookings) {
+                java.time.LocalDate bDate;
+                try {
+                    bDate = java.time.LocalDate.parse(b.getDate());
+                } catch (Exception e) {
+                    continue;
+                }
+                if (bDate.equals(day)) {
+                    if ("Hoàn thành".equalsIgnoreCase(b.getStatus()) || "Đã thanh toán".equalsIgnoreCase(b.getStatus())) {
+                        dayRevenue += b.getFee();
+                    }
+                }
+            }
+            dailyRevenues[i] = dayRevenue;
+            if (dayRevenue > maxRevenue) {
+                maxRevenue = dayRevenue;
+            }
+        }
+
+        // Scale bar heights (max height is 150dp)
+        int maxHeightDp = 150;
+        int[] heights = new int[7];
+        for (int i = 0; i < 7; i++) {
+            if (maxRevenue == 0.0) {
+                heights[i] = 10; // minimum visible height
+            } else {
+                heights[i] = (int) Math.round((dailyRevenues[i] / maxRevenue) * maxHeightDp);
+                if (heights[i] < 10 && dailyRevenues[i] > 0.0) {
+                    heights[i] = 10;
+                }
+            }
+        }
+
+        // Set layout height on views
+        setBarHeight(barMonday, heights[0]);
+        setBarHeight(barTuesday, heights[1]);
+        setBarHeight(barWednesday, heights[2]);
+        setBarHeight(barThursday, heights[3]);
+        setBarHeight(barFriday, heights[4]);
+        setBarHeight(barSaturday, heights[5]);
+        setBarHeight(barSunday, heights[6]);
+    }
+
+    private void setBarHeight(View bar, int heightDp) {
+        if (bar == null) return;
+        android.view.ViewGroup.LayoutParams params = bar.getLayoutParams();
+        params.height = (int) android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_DIP,
+                heightDp,
+                getResources().getDisplayMetrics()
+        );
+        bar.setLayoutParams(params);
     }
 
     private void showTab(View activeTab) {
@@ -434,6 +702,8 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                 cachedBookings = bookings;
                 updateBookingsUI(bookings);
                 rebuildTimelineGrid();
+                updateTodayRevenue(bookings);
+                updateStatsForPeriod("today");
             }
         });
 
@@ -441,8 +711,12 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         viewModel.getOccupancyRate().observe(this, rate -> {
             if (rate != null) {
                 String rateStr = String.format("%.1f%%", rate);
-                textStatsOccupancy.setText(rateStr);
-                progressStatsOccupancy.setProgress((int) Math.round(rate));
+                if (textStatsOccupancy != null) {
+                    textStatsOccupancy.setText(rateStr);
+                }
+                if (progressStatsOccupancy != null) {
+                    progressStatsOccupancy.setProgress((int) Math.round(rate));
+                }
             }
         });
 
@@ -450,8 +724,12 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         viewModel.getTotalRevenue().observe(this, revenue -> {
             if (revenue != null) {
                 String revStr = formatVnd(revenue);
-                textTodayRevenue.setText(revStr);
-                textStatsRevenue.setText(revStr);
+                if (textTodayRevenue != null) {
+                    textTodayRevenue.setText(revStr);
+                }
+                if (textStatsRevenue != null) {
+                    textStatsRevenue.setText(revStr);
+                }
             }
         });
 
@@ -464,7 +742,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
 
         // Observe most popular court
         viewModel.getMostPopularCourt().observe(this, popularCourt -> {
-            if (popularCourt != null) {
+            if (popularCourt != null && textStatsPopularCourt != null) {
                 textStatsPopularCourt.setText(popularCourt);
             }
         });
@@ -492,45 +770,74 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         updateActiveCourtsRatio(activeCount);
 
         // Rebuild Quick Court chips horizontal layout
-        layoutQuickCourtsContainer.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(this);
-        for (Court court : courts) {
-            View chipView = inflater.inflate(R.layout.item_quick_court_chip, layoutQuickCourtsContainer, false);
-            
-            TextView textName = chipView.findViewById(R.id.text_quick_court_name);
-            TextView textStatus = chipView.findViewById(R.id.text_quick_court_status);
-            View statusDot = chipView.findViewById(R.id.view_status_dot);
+        if (layoutQuickCourtsContainer != null) {
+            layoutQuickCourtsContainer.removeAllViews();
+            LayoutInflater inflater = LayoutInflater.from(this);
+            for (Court court : courts) {
+                View chipView = inflater.inflate(R.layout.item_quick_court_chip, layoutQuickCourtsContainer, false);
+                
+                TextView textName = chipView.findViewById(R.id.text_quick_court_name);
+                TextView textStatus = chipView.findViewById(R.id.text_quick_court_status);
+                View statusDot = chipView.findViewById(R.id.view_status_dot);
 
-            textName.setText(court.getName());
-            
-            // Set status string & dot background
-            switch (court.getStatus()) {
-                case IN_USE:
-                    textStatus.setText("Đang dùng");
-                    textStatus.setTextColor(getResources().getColor(R.color.secondary));
-                    statusDot.setBackgroundResource(R.drawable.badge_in_use);
-                    break;
-                case BOOKED:
-                    textStatus.setText("Đã đặt");
-                    textStatus.setTextColor(getResources().getColor(R.color.secondary));
-                    statusDot.setBackgroundResource(R.drawable.badge_booked);
-                    break;
-                case EMPTY:
-                    textStatus.setText("Trống");
-                    textStatus.setTextColor(getResources().getColor(R.color.primary));
-                    statusDot.setBackgroundResource(R.drawable.badge_empty);
-                    break;
-                case MAINTENANCE:
-                    textStatus.setText("Bảo trì");
-                    textStatus.setTextColor(getResources().getColor(R.color.black));
-                    statusDot.setBackgroundResource(R.drawable.badge_maintenance);
-                    break;
+                textName.setText(court.getName());
+                
+                // Set status string & dot background
+                switch (court.getStatus()) {
+                    case IN_USE:
+                        textStatus.setText("Đang dùng");
+                        textStatus.setTextColor(getResources().getColor(R.color.secondary));
+                        statusDot.setBackgroundResource(R.drawable.badge_in_use);
+                        break;
+                    case BOOKED:
+                        textStatus.setText("Đã đặt");
+                        textStatus.setTextColor(getResources().getColor(R.color.secondary));
+                        statusDot.setBackgroundResource(R.drawable.badge_booked);
+                        break;
+                    case EMPTY:
+                        textStatus.setText("Trống");
+                        textStatus.setTextColor(getResources().getColor(R.color.primary));
+                        statusDot.setBackgroundResource(R.drawable.badge_empty);
+                        break;
+                    case MAINTENANCE:
+                        textStatus.setText("Bảo trì");
+                        textStatus.setTextColor(getResources().getColor(R.color.black));
+                        statusDot.setBackgroundResource(R.drawable.badge_maintenance);
+                        break;
+                }
+
+                // Quick interaction: click chip to set status directly
+                chipView.setOnClickListener(v -> showChangeStatusDialog(court));
+
+                layoutQuickCourtsContainer.addView(chipView);
             }
+        }
+    }
 
-            // Quick interaction: click chip to set status directly
-            chipView.setOnClickListener(v -> showChangeStatusDialog(court));
+    private void updateTodayRevenue(List<Booking> bookings) {
+        if (textTodayRevenue == null) return;
+        java.time.LocalDate today = java.time.LocalDate.now();
+        double todayRevenue = 0.0;
+        int todayBookingsCount = 0;
 
-            layoutQuickCourtsContainer.addView(chipView);
+        for (Booking b : bookings) {
+            java.time.LocalDate bDate;
+            try {
+                bDate = java.time.LocalDate.parse(b.getDate());
+            } catch (Exception e) {
+                continue;
+            }
+            if (bDate.equals(today)) {
+                todayBookingsCount++;
+                if ("Hoàn thành".equalsIgnoreCase(b.getStatus()) || "Đã thanh toán".equalsIgnoreCase(b.getStatus())) {
+                    todayRevenue += b.getFee();
+                }
+            }
+        }
+
+        textTodayRevenue.setText(formatVnd(todayRevenue));
+        if (textBookingsCount != null) {
+            textBookingsCount.setText(String.valueOf(todayBookingsCount));
         }
     }
 
@@ -540,37 +847,36 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             bookingAdapter.setData(bookings, cachedCourts);
         }
 
-        // Update dashboard metrics count
-        textBookingsCount.setText(String.valueOf(bookings.size()));
-
         // Update Recent Activities list on home tab (limit to latest 5 bookings)
-        layoutRecentActivities.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(this);
-        
-        int count = 0;
-        // Iterate backwards to show latest bookings first
-        for (int i = bookings.size() - 1; i >= 0 && count < 5; i--) {
-            Booking booking = bookings.get(i);
-            View activityView = inflater.inflate(R.layout.item_recent_activity, layoutRecentActivities, false);
-
-            TextView textPlayer = activityView.findViewById(R.id.text_activity_player);
-            TextView textDetails = activityView.findViewById(R.id.text_activity_details);
-            TextView badgeFee = activityView.findViewById(R.id.badge_activity_fee);
-
-            textPlayer.setText(booking.getPlayerName());
+        if (layoutRecentActivities != null) {
+            layoutRecentActivities.removeAllViews();
+            LayoutInflater inflater = LayoutInflater.from(this);
             
-            String courtName = "Court #" + booking.getCourtId();
-            for (Court c : cachedCourts) {
-                if (c.getId() == booking.getCourtId()) {
-                    courtName = c.getName();
-                    break;
-                }
-            }
-            textDetails.setText(String.format("%s • %s - %s", courtName, booking.getStartTime(), booking.getEndTime()));
-            badgeFee.setText(formatVnd(booking.getFee()));
+            int count = 0;
+            // Iterate backwards to show latest bookings first
+            for (int i = bookings.size() - 1; i >= 0 && count < 5; i--) {
+                Booking booking = bookings.get(i);
+                View activityView = inflater.inflate(R.layout.item_recent_activity, layoutRecentActivities, false);
 
-            layoutRecentActivities.addView(activityView);
-            count++;
+                TextView textPlayer = activityView.findViewById(R.id.text_activity_player);
+                TextView textDetails = activityView.findViewById(R.id.text_activity_details);
+                TextView badgeFee = activityView.findViewById(R.id.badge_activity_fee);
+
+                textPlayer.setText(booking.getPlayerName());
+                
+                String courtName = "Court #" + booking.getCourtId();
+                for (Court c : cachedCourts) {
+                    if (c.getId() == booking.getCourtId()) {
+                        courtName = c.getName();
+                        break;
+                    }
+                }
+                textDetails.setText(String.format("%s • %s - %s", courtName, booking.getStartTime(), booking.getEndTime()));
+                badgeFee.setText(formatVnd(booking.getFee()));
+
+                layoutRecentActivities.addView(activityView);
+                count++;
+            }
         }
     }
 
@@ -993,7 +1299,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                            bgColorRes = color.primary_container;
                            textColorRes = color.black;
                         } else if (booking.getStatus().equalsIgnoreCase("Hoàn thành")) {
-                           bgColorRes = color.status_empty;
+                           bgColorRes = color.error;
                            textColorRes = color.white;
                         } else if (booking.getStatus().equalsIgnoreCase("Đã hủy")) {
                            bgColorRes = color.status_maintenance;
@@ -1013,7 +1319,11 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
                      textInfo.setTypeface(Typeface.DEFAULT_BOLD);
                      textInfo.setPadding(this.dpToPx(4), this.dpToPx(4), this.dpToPx(4), this.dpToPx(4));
                      cardView.addView(textInfo);
-                     cardView.setOnClickListener((v) -> this.showBookingActionDialog(booking));
+                     cardView.setOnClickListener((v) -> {
+                         Intent intent = new Intent(MainActivity.this, BookingDetailActivity.class);
+                         intent.putExtra("booking_id", booking.getId());
+                         startActivity(intent);
+                     });
                      rowFrame.addView(cardView);
                   }
                }
@@ -1090,6 +1400,7 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
             return displayDate;
         }
     }
+
     private String formatVnd(double value) {
         long vnd = Math.round(value);
         java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
@@ -1097,5 +1408,22 @@ public class MainActivity extends AppCompatActivity implements CourtAdapter.OnCo
         symbols.setGroupingSeparator('.');
         formatter.setDecimalFormatSymbols(symbols);
         return formatter.format(vnd) + "đ";
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntentTabs(intent);
+    }
+
+    private void handleIntentTabs(Intent intent) {
+        if (intent != null && intent.hasExtra("select_tab")) {
+            String tab = intent.getStringExtra("select_tab");
+            BottomNavigationView bottomNavigation = findViewById(R.id.bottom_navigation);
+            if ("bookings".equals(tab) && bottomNavigation != null) {
+                bottomNavigation.setSelectedItemId(R.id.navigation_bookings);
+            }
+        }
     }
 }

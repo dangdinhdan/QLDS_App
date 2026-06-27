@@ -44,14 +44,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/ic_person_24"
+                    android:src="@drawable/profile_avatar"
                     android:contentDescription="Profile Picture" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CourtPro Admin"
+                android:text="PicklePro Manager"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/on_background"
@@ -102,10 +102,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/primary"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
                     app:cardBackgroundColor="@color/primary_container">
 
                     <RelativeLayout
@@ -121,15 +120,15 @@
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05"
-                            android:textColor="@color/on_primary_container"
+                            android:textColor="#191E00"
                             android:alpha="0.8"/>
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_alignParentEnd="true"
-                            android:src="@drawable/ic_analytics_24"
-                            app:tint="@color/on_primary_container"/>
+                            android:src="@drawable/ic_cash_24"
+                            app:tint="#191E00"/>
 
                         <TextView
                             android:id="@+id/text_today_revenue"
@@ -137,10 +136,10 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/text_rev_label"
                             android:layout_marginTop="8dp"
-                            android:text="$176.00"
+                            android:text="4.250.000đ"
                             android:textSize="32sp"
                             android:textStyle="bold"
-                            android:textColor="@color/on_primary_container"/>
+                            android:textColor="#191E00"/>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -153,10 +152,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="▲ +12% so với hôm qua"
+                                android:text="↗ +12% so với hôm qua"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/on_primary_container"/>
+                                android:textColor="#191E00"/>
                         </LinearLayout>
 
                     </RelativeLayout>
@@ -176,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="6dp"
-                        app:cardCornerRadius="12dp"
+                        app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="@color/border_gray"
@@ -193,25 +192,35 @@
                                 android:layout_height="wrap_content"
                                 android:text="Số lượt đặt sân"
                                 android:textSize="12sp"
-                                android:textColor="#555555" />
+                                android:textColor="#555555"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/text_bookings_count"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="4"
+                                android:text="18"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/on_background" />
 
-                            <ImageView
+                            <!-- Bottom-left icon -->
+                            <com.google.android.material.card.MaterialCardView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
-                                android:layout_gravity="end"
-                                android:layout_marginTop="8dp"
-                                android:src="@drawable/ic_calendar_24"
-                                app:tint="@color/secondary" />
+                                android:layout_marginTop="12dp"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#E9ECEF">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_calendar_24"
+                                    app:tint="@color/secondary" />
+                            </com.google.android.material.card.MaterialCardView>
 
                         </LinearLayout>
 
@@ -223,7 +232,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="6dp"
-                        app:cardCornerRadius="12dp"
+                        app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="@color/border_gray"
@@ -238,27 +247,37 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Sân đang dùng"
+                                android:text="Sân đang sử dụng"
                                 android:textSize="12sp"
-                                android:textColor="#555555" />
+                                android:textColor="#555555"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/text_active_courts_ratio"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="1 / 5"
+                                android:text="6 / 8"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/primary" />
+                                android:textColor="@color/secondary" />
 
-                            <ImageView
+                            <!-- Bottom-left icon -->
+                            <com.google.android.material.card.MaterialCardView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
-                                android:layout_gravity="end"
-                                android:layout_marginTop="8dp"
-                                android:src="@drawable/ic_courts_24"
-                                app:tint="@color/primary" />
+                                android:layout_marginTop="12dp"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/primary_container">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_courts_24"
+                                    app:tint="#191E00" />
+                            </com.google.android.material.card.MaterialCardView>
 
                         </LinearLayout>
 
@@ -266,67 +285,222 @@
 
                 </LinearLayout>
 
-                <!-- Quick Court Status Section -->
+                <!-- TRUY CẬP NHANH Section -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="TRUY CẬP NHANH"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#555555"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Grid Row 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
                     android:layout_marginBottom="12dp">
 
-                    <TextView
+                    <!-- Quản lý sân -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_quick_courts"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="120dp"
                         android:layout_weight="1"
-                        android:text="Trạng thái sân nhanh"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/on_background"/>
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_gray"
+                        app:cardBackgroundColor="@color/white">
 
-                    <TextView
-                        android:id="@+id/text_view_all_courts"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Xem tất cả ›"
-                        android:textSize="14sp"
-                        android:textColor="@color/primary"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/primary_container">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_courts_24"
+                                    app:tint="#191E00" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="Quản lý sân"
+                                android:textSize="14sp"
+                                android:textColor="@color/on_background"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Khách hàng -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_quick_customers"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_gray"
+                        app:cardBackgroundColor="@color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#E9ECEF">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_person_24"
+                                    app:tint="@color/secondary" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="Khách hàng"
+                                android:textSize="14sp"
+                                android:textColor="@color/on_background"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="none"
-                    android:layout_marginBottom="24dp">
-
-                    <LinearLayout
-                        android:id="@+id/layout_quick_courts_container"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingVertical="4dp" />
-
-                </HorizontalScrollView>
-
-                <!-- Recent Activities Section -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Hoạt động gần đây"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/on_background"
-                    android:layout_marginBottom="12dp"/>
-
-                <!-- Container for dynamically added booking items -->
+                <!-- Grid Row 2 -->
                 <LinearLayout
-                    android:id="@+id/layout_recent_activities"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <!-- Thống kê -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_quick_stats"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_gray"
+                        app:cardBackgroundColor="@color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/primary_container">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_analytics_24"
+                                    app:tint="#191E00" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="Thống kê"
+                                android:textSize="14sp"
+                                android:textColor="@color/on_background"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Bảng giá -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_quick_pricing"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/border_gray"
+                        app:cardBackgroundColor="@color/white">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="#E9ECEF">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_cash_24"
+                                    app:tint="@color/secondary" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="Bảng giá"
+                                android:textSize="14sp"
+                                android:textColor="@color/on_background"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -928,7 +1102,8 @@
             android:id="@+id/scroll_stats_tab"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:background="@color/background">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -936,157 +1111,546 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Header Title -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Báo cáo hiệu suất"
-                    android:textSize="20sp"
+                    android:text="Statistics &amp; Reports"
+                    android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="@color/on_background"
+                    android:textColor="@color/secondary"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Occupancy Rate Card -->
+                <!-- Period Filter Chips Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="20dp">
+
+                    <TextView
+                        android:id="@+id/chip_today"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_period_chip_selected"
+                        android:gravity="center"
+                        android:text="Hôm nay"
+                        android:textColor="#191E00"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/chip_this_week"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_period_chip_unselected"
+                        android:gravity="center"
+                        android:text="Tuần này"
+                        android:textColor="@color/secondary"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:id="@+id/chip_this_month"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_period_chip_unselected"
+                        android:gravity="center"
+                        android:text="Tháng này"
+                        android:textColor="@color/secondary"
+                        android:textStyle="bold"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+                <!-- Card 1: Tổng doanh thu (Total Revenue) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="@color/border_gray"
                     app:cardBackgroundColor="@color/white">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
                         android:padding="20dp">
 
                         <TextView
+                            android:id="@+id/label_total_revenue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tỉ lệ lấp đầy sân (Occupancy)"
-                            android:textSize="14sp"
-                            android:textColor="#555555"
-                            android:textStyle="bold"/>
+                            android:text="Tổng doanh thu"
+                            android:textSize="13sp"
+                            android:textColor="@color/secondary" />
 
-                        <TextView
-                            android:id="@+id/text_stats_occupancy"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="60.0%"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/primary"/>
-
-                        <!-- Custom Progress Bar -->
-                        <ProgressBar
-                            android:id="@+id/progress_stats_occupancy"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="8dp"
-                            android:layout_marginTop="12dp"
-                            android:progress="60"
-                            android:progressTint="@color/primary"
-                            android:progressBackgroundTint="@color/border_gray" />
-
+                        <!-- Growth Percentage Badge -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Dựa trên trạng thái sân đang sử dụng hoặc được đặt."
-                            android:textSize="12sp"
-                            android:textColor="#777777"/>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Popular Court Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/border_gray"
-                    app:cardBackgroundColor="@color/white">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Sân được yêu thích nhất"
-                            android:textSize="14sp"
-                            android:textColor="#555555"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:id="@+id/text_stats_popular_court"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Center Court"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/secondary"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="Xác định dựa trên số lượt đặt sân từ trước đến nay."
-                            android:textSize="12sp"
-                            android:textColor="#777777"/>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Revenue Card Details -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/border_gray"
-                    app:cardBackgroundColor="@color/white">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tổng doanh thu tích lũy"
-                            android:textSize="14sp"
-                            android:textColor="#555555"
-                            android:textStyle="bold"/>
+                            android:layout_alignParentEnd="true"
+                            android:background="@drawable/bg_period_chip_selected"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="4dp"
+                            android:text="+12%"
+                            android:textSize="11sp"
+                            android:textColor="#191E00"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/text_stats_revenue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_below="@id/label_total_revenue"
                             android:layout_marginTop="8dp"
-                            android:text="$176.00"
-                            android:textSize="24sp"
+                            android:text="4.250.000đ"
+                            android:textSize="28sp"
                             android:textStyle="bold"
-                            android:textColor="@color/on_background"/>
+                            android:textColor="@color/on_background" />
+
+                        <!-- Footnote: Compared to last month -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/text_stats_revenue"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@drawable/ic_analytics_24"
+                                app:tint="@color/secondary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:text="So với tháng trước"
+                                android:textSize="12sp"
+                                android:textColor="@color/secondary"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card 2: Tổng lượt đặt (Total Bookings) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_gray"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tổng lượt đặt"
+                            android:textSize="13sp"
+                            android:textColor="@color/secondary" />
+
+                        <TextView
+                            android:id="@+id/text_stats_bookings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="128"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_background" />
+
+                        <TextView
+                            android:id="@+id/text_stats_bookings_sub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="85% thành công"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
+                <!-- Card 3: Xu hướng doanh thu (Revenue Trend) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_gray"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp">
+
+                            <TextView
+                                android:id="@+id/title_trend"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Xu hướng doanh thu"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/on_background" />
+
+                            <TextView
+                                android:id="@+id/text_trend_month"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@id/title_trend"
+                                android:layout_marginTop="2dp"
+                                android:text="Tháng 10, 2023"
+                                android:textSize="12sp"
+                                android:textColor="@color/secondary" />
+
+                            <!-- Active Indicator Pill on Right -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <View
+                                    android:layout_width="8dp"
+                                    android:layout_height="8dp"
+                                    android:background="@drawable/bg_period_chip_selected"
+                                    android:layout_marginEnd="6dp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Năm nay"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/on_background"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                        </RelativeLayout>
+
+                        <!-- Custom Bar Chart Visualizer -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:orientation="horizontal"
+                            android:gravity="bottom"
+                            android:layout_marginTop="8dp">
+
+                            <!-- Monday T2 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_monday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="60dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T2"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                            <!-- Tuesday T3 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_tuesday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="90dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T3"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                            <!-- Wednesday T4 (ACTIVE HIGHLIGHT) -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_wednesday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="120dp"
+                                    android:background="@drawable/bg_trend_bar_fill_active" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T4"
+                                    android:textSize="11sp"
+                                    android:textColor="#191E00"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Thursday T5 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_thursday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="80dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T5"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                            <!-- Friday T6 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_friday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="110dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T6"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                            <!-- Saturday T7 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_saturday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="150dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="T7"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                            <!-- Sunday CN -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:gravity="center_horizontal|bottom">
+
+                                <View
+                                    android:id="@+id/bar_sunday"
+                                    android:layout_width="12dp"
+                                    android:layout_height="130dp"
+                                    android:background="@drawable/bg_trend_bar_fill" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:text="CN"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/secondary" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card 4: Phân khúc khách hàng (Customer Segment) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_gray"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phân khúc khách hàng"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_background"
+                            android:layout_marginBottom="16dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <!-- Circular Donut Chart -->
+                            <FrameLayout
+                                android:layout_width="96dp"
+                                android:layout_height="96dp"
+                                android:layout_marginEnd="24dp">
+
+                                <ProgressBar
+                                    android:id="@+id/progress_customer_segment"
+                                    style="?android:attr/progressBarStyleHorizontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:indeterminate="false"
+                                    android:max="100"
+                                    android:progress="65"
+                                    android:progressDrawable="@drawable/circular_progress_bar" />
+
+                                <TextView
+                                    android:id="@+id/text_customer_segment_percent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="65%"
+                                    android:textStyle="bold"
+                                    android:textSize="15sp"
+                                    android:textColor="@color/on_background" />
+
+                            </FrameLayout>
+
+                            <!-- Legends -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <!-- Legend 1: Quay lại -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <View
+                                        android:layout_width="10dp"
+                                        android:layout_height="10dp"
+                                        android:background="@drawable/bg_trend_bar_fill"
+                                        android:layout_marginEnd="8dp" />
+
+                                    <TextView
+                                        android:id="@+id/text_legend_returning"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Quay lại (65%)"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/on_background" />
+                                </LinearLayout>
+
+                                <!-- Legend 2: Mới -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <View
+                                        android:layout_width="10dp"
+                                        android:layout_height="10dp"
+                                        android:background="#E9ECEF"
+                                        android:layout_marginEnd="8dp" />
+
+                                    <TextView
+                                        android:id="@+id/text_legend_new"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Mới (35%)"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/secondary" />
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>

@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".BookingDetailActivity">
+
+    <!-- Top Sticky Header -->
+    <RelativeLayout
+        android:id="@+id/layout_header"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/white"
+        android:paddingHorizontal="16dp"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/button_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back_24"
+            android:contentDescription="Go Back"
+            app:tint="@color/secondary" />
+
+        <TextView
+            android:id="@+id/text_screen_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_toEndOf="@id/button_back"
+            android:text="Chi tiết đặt sân"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/on_background" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/button_share"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_share_24"
+                android:contentDescription="Share"
+                app:tint="@color/secondary"
+                android:layout_marginEnd="8dp" />
+
+            <ImageButton
+                android:id="@+id/button_profile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_person_24"
+                android:contentDescription="Profile"
+                app:tint="@color/secondary" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- Scrollable content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/layout_header"
+        app:layout_constraintBottom_toTopOf="@id/layout_bottom_actions"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Card 1: THÔNG TIN KHÁCH HÀNG -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/label_cust_info_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="THÔNG TIN KHÁCH HÀNG"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:layout_alignParentStart="true" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_person_24"
+                        app:tint="@color/secondary"
+                        android:layout_alignParentEnd="true" />
+
+                    <!-- Họ và tên -->
+                    <TextView
+                        android:id="@+id/label_fullname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/label_cust_info_title"
+                        android:layout_marginTop="16dp"
+                        android:text="Họ và tên"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary" />
+
+                    <TextView
+                        android:id="@+id/text_customer_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/label_fullname"
+                        android:layout_marginTop="4dp"
+                        android:text="Nguyễn Văn A"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/on_background" />
+
+                    <!-- Số điện thoại -->
+                    <TextView
+                        android:id="@+id/label_phone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/text_customer_name"
+                        android:layout_marginTop="12dp"
+                        android:text="Số điện thoại"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary" />
+
+                    <TextView
+                        android:id="@+id/text_phone_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/label_phone"
+                        android:layout_marginTop="4dp"
+                        android:text="0901234567"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/on_background" />
+
+                    <!-- Ngày đặt -->
+                    <TextView
+                        android:id="@+id/label_booking_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/text_phone_number"
+                        android:layout_marginTop="12dp"
+                        android:text="Ngày đặt"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/label_booking_date"
+                        android:layout_marginTop="4dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_calendar_24"
+                            app:tint="@color/on_background"
+                            android:layout_marginEnd="6dp" />
+
+                        <TextView
+                            android:id="@+id/text_booking_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="15/10/2023"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_background" />
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 2: DANH SÁCH SÂN ĐẶT -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="DANH SÁCH SÂN ĐẶT"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/text_court_count_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/bg_chip_selected"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:text="2 Sân"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_primary_container" />
+
+                    </RelativeLayout>
+
+                    <!-- Booked court list container -->
+                    <LinearLayout
+                        android:id="@+id/layout_booked_courts_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 3: GHI CHÚ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="@color/secondary"
+                            android:rotation="90"
+                            android:layout_marginEnd="6dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GHI CHÚ"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#F1F3F5"
+                        android:padding="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_booking_notes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="&quot;Khách hàng yêu cầu mượn thêm 2 vợt và có nước suối sẵn tại sân. Liên hệ trước 15 phút khi đến.&quot;"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary"
+                            android:textStyle="italic" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card 4: TỔNG KẾT THANH TOÁN -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TỔNG KẾT THANH TOÁN"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Subtotal row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tạm tính"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary" />
+
+                        <TextView
+                            android:id="@+id/text_subtotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="900.000đ"
+                            android:textSize="14sp"
+                            android:textColor="@color/on_background"
+                            android:textStyle="bold" />
+                    </RelativeLayout>
+
+                    <!-- Tax row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Thuế (0%)"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary" />
+
+                        <TextView
+                            android:id="@+id/text_tax"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:text="0đ"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary" />
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/border_gray"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Total Row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="Tổng cộng"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_background" />
+
+                        <TextView
+                            android:id="@+id/text_total_fee"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:text="900.000đ"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary" />
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/border_gray"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Status Row -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="Trạng thái"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary" />
+
+                        <TextView
+                            android:id="@+id/text_status_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/bg_chip_selected"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="Đã thanh toán"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_primary_container" />
+                    </RelativeLayout>
+
+                    <!-- Payment Method Row -->
+
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Actions Sticky Layout -->
+    <LinearLayout
+        android:id="@+id/layout_bottom_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Thanh toán (Pay Booking) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_pay_booking"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Thanh toán"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#191E00"
+            app:backgroundTint="@color/primary_container"
+            app:icon="@drawable/ic_cash_24"
+            app:iconTint="#191E00"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:cornerRadius="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Sửa thông tin (Edit Booking) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_edit_booking"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Sửa thông tin"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/secondary"
+            app:icon="@drawable/ic_edit_24"
+            app:iconTint="@color/white"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:cornerRadius="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Hủy đặt sân (Cancel Booking) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_cancel_booking"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Hủy đặt sân"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/error"
+            app:backgroundTint="@color/white"
+            app:strokeColor="@color/error"
+            app:strokeWidth="1dp"
+            app:icon="@drawable/ic_cancel_24"
+            app:iconTint="@color/error"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:cornerRadius="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

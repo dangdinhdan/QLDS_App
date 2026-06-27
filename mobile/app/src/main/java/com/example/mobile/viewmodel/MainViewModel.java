@@ -83,6 +83,12 @@ public class MainViewModel extends ViewModel {
         refreshDataLocalOnly();
     }
 
+    public void updateBooking(Booking booking) {
+        repository.updateBooking(booking, this::refreshData);
+        refreshDataLocalOnly();
+    }
+
+
     public void updateCourtStatus(int courtId, CourtStatus status) {
         repository.updateCourtStatus(courtId, status);
         refreshDataLocalOnly();

@@ -392,6 +392,7 @@ public class CourtRepository {
                 jsonRequest.put("endTime", booking.getEndTime());
                 jsonRequest.put("fee", booking.getFee());
                 jsonRequest.put("status", booking.getStatus());
+                jsonRequest.put("notes", booking.getNotes() != null ? booking.getNotes() : "");
 
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
@@ -475,6 +476,86 @@ public class CourtRepository {
         }
         return false;
     }
+
+    public void updateBooking(Booking booking, Runnable onComplete) {
+        synchronized (bookings) {
+            for (int i = 0; i < bookings.size(); i++) {
+                if (bookings.get(i).getId() == booking.getId()) {
+                    bookings.set(i, booking);
+                    break;
+                }
+            }
+        }
+
+        // Send PUT request to backend in background
+        executorService.execute(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(BOOKINGS_API_URL + "/" + booking.getId());
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("PUT");
+                conn.setRequestProperty("Content-Type", "application/json; utf-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("courtId", booking.getCourtId());
+                jsonRequest.put("playerName", booking.getPlayerName());
+                jsonRequest.put("phoneNumber", booking.getPhoneNumber() != null ? booking.getPhoneNumber() : "");
+                jsonRequest.put("date", booking.getDate());
+                jsonRequest.put("startTime", booking.getStartTime());
+                jsonRequest.put("endTime", booking.getEndTime());
+                jsonRequest.put("fee", booking.getFee());
+                jsonRequest.put("status", booking.getStatus());
+                jsonRequest.put("notes", booking.getNotes() != null ? booking.getNotes() : "");
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = jsonRequest.toString().getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    // Read response to ensure request completes and commits
+                    try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                        StringBuilder response = new StringBuilder();
+                        String responseLine;
+                        while ((responseLine = br.readLine()) != null) {
+                            response.append(responseLine.trim());
+                        }
+                        Log.d("CourtRepository", "Cập nhật đặt sân thành công: " + response.toString());
+                    }
+                } else {
+                    // Read error stream if any
+                    java.io.InputStream errorStream = conn.getErrorStream();
+                    if (errorStream != null) {
+                        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+                            StringBuilder errorResponse = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                errorResponse.append(line.trim());
+                            }
+                            Log.e("CourtRepository", "Lỗi backend khi cập nhật: " + errorResponse.toString());
+                        }
+                    } else {
+                        Log.e("CourtRepository", "Lỗi cập nhật đặt sân trên backend. Response code: " + responseCode);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("CourtRepository", "Lỗi kết nối khi cập nhật đặt sân trên backend", e);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (onComplete != null) {
+                    onComplete.run();
+                }
+            }
+        });
+    }
+
 
     public void updateCourtStatus(int courtId, CourtStatus status) {
         Court court = getCourtById(courtId);
@@ -807,9 +888,11 @@ public class CourtRepository {
                                     double fee = obj.optDouble("fee", 0.0);
                                     String status = obj.optString("status", "Đã đặt");
                                     String phoneNumber = obj.optString("phoneNumber", "");
+                                    String notes = obj.optString("notes", "");
 
                                     Booking booking = new Booking(id, courtId, playerName, date, startTime, endTime, fee, status);
                                     booking.setPhoneNumber(phoneNumber);
+                                    booking.setNotes(notes);
                                     newBookings.add(booking);
                                 }
                                 synchronized (bookings) {
