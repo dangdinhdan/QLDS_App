@@ -269,7 +269,7 @@
                                 android:layout_marginTop="12dp"
                                 app:cardCornerRadius="16dp"
                                 app:cardElevation="0dp"
-                                app:cardBackgroundColor="@color/primary_container">
+                                app:cardBackgroundColor="#E9ECEF">
 
                                 <ImageView
                                     android:layout_width="16dp"
@@ -328,7 +328,7 @@
                                 android:layout_height="48dp"
                                 app:cardCornerRadius="24dp"
                                 app:cardElevation="0dp"
-                                app:cardBackgroundColor="@color/primary_container">
+                                app:cardBackgroundColor="#E9ECEF">
 
                                 <ImageView
                                     android:layout_width="24dp"
@@ -431,7 +431,7 @@
                                 android:layout_height="48dp"
                                 app:cardCornerRadius="24dp"
                                 app:cardElevation="0dp"
-                                app:cardBackgroundColor="@color/primary_container">
+                                app:cardBackgroundColor="#E9ECEF">
 
                                 <ImageView
                                     android:layout_width="24dp"

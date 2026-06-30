@@ -219,7 +219,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         if (mainBooking.getNotes() != null && !mainBooking.getNotes().isEmpty()) {
             textBookingNotes.setText("\"" + mainBooking.getNotes() + "\"");
         } else {
-            textBookingNotes.setText("\"Khách hàng yêu cầu mượn thêm 2 vợt và có nước suối sẵn tại sân. Liên hệ trước 15 phút khi đến.\"");
+            textBookingNotes.setText("\"không có\"");
         }
 
         // Payment Summary Card

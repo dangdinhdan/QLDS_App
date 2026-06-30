@@ -1,31 +1,102 @@
 package com.example.backend.model;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-@Entity
-@Table(name = "tbl_hoadon")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Hoadon {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "ma_hoadon", nullable = false, unique = true, length = 50)
     private String maHoadon;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_phieudatsan", nullable = false)
     private Phieudatsan phieudatsan;
-
-    @Column(length = 255)
     private String ghichu;
-
-    @Column(name = "tongtien", nullable = false)
     private Double tongtien;
+
+    public Hoadon() {
+    }
+
+    public Hoadon(Integer id, String maHoadon, Phieudatsan phieudatsan, String ghichu, Double tongtien) {
+        this.id = id;
+        this.maHoadon = maHoadon;
+        this.phieudatsan = phieudatsan;
+        this.ghichu = ghichu;
+        this.tongtien = tongtien;
+    }
+
+    public static HoadonBuilder builder() {
+        return new HoadonBuilder();
+    }
+
+    public static class HoadonBuilder {
+        private Integer id;
+        private String maHoadon;
+        private Phieudatsan phieudatsan;
+        private String ghichu;
+        private Double tongtien;
+
+        public HoadonBuilder id(Integer id) {
+            this.id = id;
+            return this;
+        }
+
+        public HoadonBuilder maHoadon(String maHoadon) {
+            this.maHoadon = maHoadon;
+            return this;
+        }
+
+        public HoadonBuilder phieudatsan(Phieudatsan phieudatsan) {
+            this.phieudatsan = phieudatsan;
+            return this;
+        }
+
+        public HoadonBuilder ghichu(String ghichu) {
+            this.ghichu = ghichu;
+            return this;
+        }
+
+        public HoadonBuilder tongtien(Double tongtien) {
+            this.tongtien = tongtien;
+            return this;
+        }
+
+        public Hoadon build() {
+            return new Hoadon(id, maHoadon, phieudatsan, ghichu, tongtien);
+        }
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getMaHoadon() {
+        return maHoadon;
+    }
+
+    public void setMaHoadon(String maHoadon) {
+        this.maHoadon = maHoadon;
+    }
+
+    public Phieudatsan getPhieudatsan() {
+        return phieudatsan;
+    }
+
+    public void setPhieudatsan(Phieudatsan phieudatsan) {
+        this.phieudatsan = phieudatsan;
+    }
+
+    public String getGhichu() {
+        return ghichu;
+    }
+
+    public void setGhichu(String ghichu) {
+        this.ghichu = ghichu;
+    }
+
+    public Double getTongtien() {
+        return tongtien;
+    }
+
+    public void setTongtien(Double tongtien) {
+        this.tongtien = tongtien;
+    }
 }

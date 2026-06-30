@@ -39,33 +39,54 @@ public class ImageLoader {
 
     public void loadImage(String urlStr, ImageView imageView, int placeholderResId) {
         if (urlStr == null || urlStr.trim().isEmpty()) {
+            imageView.setTag(null);
             imageView.setImageResource(placeholderResId);
             return;
         }
         
         Bitmap cached = memoryCache.get(urlStr);
         if (cached != null) {
+            imageView.setTag(urlStr);
             imageView.setImageBitmap(cached);
             return;
         }
 
-        // Set placeholder first
+        // Set placeholder first and tag
+        imageView.setTag(urlStr);
         imageView.setImageResource(placeholderResId);
 
         executor.execute(() -> {
+            HttpURLConnection connection = null;
+            InputStream input = null;
             try {
                 URL url = new URL(urlStr);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
                 connection.connect();
-                InputStream input = connection.getInputStream();
+                input = connection.getInputStream();
                 Bitmap bitmap = BitmapFactory.decodeStream(input);
                 if (bitmap != null) {
                     memoryCache.put(urlStr, bitmap);
-                    mainHandler.post(() -> imageView.setImageBitmap(bitmap));
+                    final Bitmap finalBitmap = bitmap;
+                    mainHandler.post(() -> {
+                        if (urlStr.equals(imageView.getTag())) {
+                            imageView.setImageBitmap(finalBitmap);
+                        }
+                    });
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    if (input != null) {
+                        input.close();
+                    }
+                } catch (Exception ignored) {}
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         });
     }
